@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AlertOctagon, ShieldAlert, Zap, CheckCircle2, XCircle, ArrowRight } from 'lucide-react';
+import { AlertOctagon, ShieldAlert, Zap, CheckCircle2, XCircle, ArrowRight, Sparkles, Terminal } from 'lucide-react';
 import { runAdversarialSimulation } from '../services/api';
 
 export default function AdversarialLab() {
@@ -12,25 +12,28 @@ export default function AdversarialLab() {
       id: 'SILENT_TAMPER',
       title: 'Silent Content Tamper Attack',
       tag: 'Integrity Violation',
-      color: 'var(--crimson)',
-      description: 'An attacker secretly alters a single word in a verified AI contract ("Approved" -> "REJECTED").',
-      expected: 'ModelLedger detects the single-bit difference through SHA-256 and blocks fraudulent execution.'
+      color: 'var(--neon-crimson)',
+      badge: 'SHA-256 Mismatch',
+      description: 'An attacker secretly alters a single word or pixel in a verified AI document ("Approved" -> "REJECTED").',
+      expected: 'ModelLedger detects the single-bit alteration, breaking the hash chain and failing verification.'
     },
     {
       id: 'FABRICATED_GENESIS',
       title: 'Fabricated Genesis / Prior Art Theft',
-      tag: 'Duplicate Ownership',
-      color: 'var(--amber)',
-      description: 'An attacker downloads an authentic artist creation and attempts to re-mint a second Genesis block.',
-      expected: 'Blockchain rejects duplicate registration with "Artifact hash already registered".'
+      tag: 'Double-Spending',
+      color: 'var(--neon-amber)',
+      badge: 'Duplicate Prevention',
+      description: 'An attacker takes someone else\'s already-registered artwork and tries to claim original genesis credit under their own wallet.',
+      expected: 'Smart contract rejects duplicate minting with "Artifact hash already registered".'
     },
     {
       id: 'BROKEN_LINEAGE',
       title: 'Dangling Node / Broken Lineage Attack',
       tag: 'Chain Spoofing',
-      color: 'var(--indigo)',
-      description: 'An adversary claims their edited file originates from a fake non-existent parent hash.',
-      expected: 'Protocol audits parent state on-chain, rejecting orphan lineage claims.'
+      color: 'var(--neon-purple)',
+      badge: 'Parent Verification',
+      description: 'An adversary claims their modified file originates from a fake non-existent parent hash.',
+      expected: 'Protocol audits parent existence on-chain, rejecting orphaned claims.'
     }
   ];
 
@@ -49,40 +52,53 @@ export default function AdversarialLab() {
   };
 
   return (
-    <div style={{ maxWidth: '960px', margin: '0 auto', padding: '36px 20px' }}>
-      <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+    <div style={{ maxWidth: '1080px', margin: '0 auto', padding: '40px 24px 120px' }}>
+      <div style={{ textAlign: 'center', marginBottom: '36px' }}>
         <div style={{
           display: 'inline-flex',
           alignItems: 'center',
-          gap: '6px',
-          background: 'rgba(239, 68, 68, 0.15)',
-          color: 'var(--crimson)',
-          border: '1px solid rgba(239, 68, 68, 0.3)',
-          padding: '4px 12px',
-          borderRadius: '9999px',
-          fontSize: '0.75rem',
+          gap: '8px',
+          padding: '6px 16px',
+          borderRadius: '999px',
+          background: 'rgba(244, 63, 94, 0.1)',
+          border: '1px solid rgba(244, 63, 94, 0.3)',
+          color: 'var(--neon-crimson)',
+          fontSize: '0.8rem',
           fontWeight: 700,
-          marginBottom: '12px'
+          marginBottom: '16px',
+          letterSpacing: '0.04em'
         }}>
           <AlertOctagon size={14} />
-          <span>HACKATHON ADVERSARIAL SANDBOX</span>
+          ADVERSARIAL STRESS TEST LAB
         </div>
-        <h2 style={{ fontSize: '2rem', fontWeight: 800, color: '#fff', letterSpacing: '-0.03em' }}>
-          Adversarial Testing Lab
-        </h2>
-        <p style={{ color: 'var(--text-muted)', marginTop: '8px', fontSize: '0.95rem' }}>
-          Simulate real-world attacks, spoofing attempts, and silent tampering to evaluate ModelLedger's cryptographic resilience.
+        <h1 style={{
+          fontSize: 'clamp(2.2rem, 5vw, 3.4rem)',
+          fontWeight: 900,
+          letterSpacing: '-0.04em',
+          lineHeight: 1.1,
+          color: '#fff'
+        }}>
+          Attack <span style={{ color: 'var(--neon-crimson)' }}>Sandbox</span>
+        </h1>
+        <p style={{
+          color: 'var(--text-muted)',
+          marginTop: '12px',
+          fontSize: '1.05rem',
+          maxWidth: '680px',
+          margin: '12px auto 0'
+        }}>
+          Simulate real-world exploits, silent tampering, and copyright theft to witness ModelLedger's cryptographic defense in real time.
         </p>
       </div>
 
-      {/* Scenario Cards Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+      {/* Scenario Cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '22px' }}>
         {scenarios.map((s) => (
           <div
             key={s.id}
-            className="glass-panel"
+            className="glass-3d"
             style={{
-              padding: '24px',
+              padding: '28px',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
@@ -90,34 +106,42 @@ export default function AdversarialLab() {
             }}
           >
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
                 <span style={{
-                  fontSize: '0.72rem',
-                  fontWeight: 700,
+                  fontSize: '0.75rem',
+                  fontWeight: 800,
                   textTransform: 'uppercase',
                   color: s.color,
                   letterSpacing: '0.04em'
                 }}>
                   {s.tag}
                 </span>
-                <ShieldAlert size={18} color={s.color} />
+                <span className="badge-futuristic" style={{
+                  background: 'rgba(255, 255, 255, 0.06)',
+                  color: 'var(--text-muted)',
+                  fontSize: '0.72rem'
+                }}>
+                  {s.badge}
+                </span>
               </div>
-              <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#fff', marginBottom: '8px' }}>
+
+              <h4 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#fff', marginBottom: '10px' }}>
                 {s.title}
               </h4>
-              <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '12px' }}>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: '16px' }}>
                 {s.description}
               </p>
+
               <div style={{
-                background: 'rgba(7, 9, 14, 0.6)',
-                padding: '10px 12px',
-                borderRadius: '6px',
+                background: 'rgba(7, 11, 20, 0.7)',
+                padding: '12px 14px',
+                borderRadius: '8px',
                 border: '1px solid var(--border-subtle)',
-                fontSize: '0.75rem',
+                fontSize: '0.78rem',
                 color: 'var(--text-dim)',
-                marginBottom: '20px'
+                marginBottom: '24px'
               }}>
-                <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Expected Defense: </span>
+                <span style={{ color: 'var(--text-muted)', fontWeight: 700 }}>Expected Defense: </span>
                 {s.expected}
               </div>
             </div>
@@ -131,17 +155,18 @@ export default function AdversarialLab() {
                 justifyContent: 'center',
                 gap: '8px',
                 width: '100%',
-                padding: '10px',
+                padding: '12px',
                 borderRadius: 'var(--radius-sm)',
                 background: s.color,
-                color: '#07090e',
-                fontWeight: 700,
-                fontSize: '0.85rem',
+                color: '#fff',
+                fontWeight: 800,
+                fontSize: '0.88rem',
+                boxShadow: `0 0 20px ${s.color}44`,
                 opacity: runningScenario ? 0.6 : 1
               }}
             >
-              <Zap size={15} />
-              {runningScenario === s.id ? 'Simulating Attack...' : 'Launch Attack Vector'}
+              <Zap size={16} />
+              {runningScenario === s.id ? 'Simulating Attack Vector...' : 'Launch Attack Vector'}
             </button>
           </div>
         ))}
@@ -152,104 +177,105 @@ export default function AdversarialLab() {
           marginTop: '24px',
           padding: '14px',
           borderRadius: 'var(--radius-sm)',
-          background: 'rgba(239, 68, 68, 0.1)',
-          border: '1px solid rgba(239, 68, 68, 0.3)',
-          color: 'var(--crimson)',
+          background: 'rgba(244, 63, 94, 0.12)',
+          border: '1px solid rgba(244, 63, 94, 0.35)',
+          color: 'var(--neon-crimson)',
           fontSize: '0.88rem'
         }}>
           {error}
         </div>
       )}
 
-      {/* Simulation Result Presentation */}
+      {/* Result Display */}
       {result && (
-        <div className="glass-panel" style={{
-          marginTop: '32px',
-          padding: '28px',
-          border: '1px solid var(--emerald)',
-          background: 'rgba(16, 185, 129, 0.05)',
-          boxShadow: '0 0 30px rgba(16, 185, 129, 0.15)'
+        <div className="glass-3d" style={{
+          marginTop: '36px',
+          padding: '32px',
+          border: '1px solid var(--neon-emerald)',
+          background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(7, 11, 20, 0.9) 100%)',
+          boxShadow: '0 0 45px rgba(16, 185, 129, 0.2)'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '18px' }}>
             <div style={{
-              width: '40px',
-              height: '40px',
+              width: '46px',
+              height: '46px',
               borderRadius: '50%',
-              background: 'var(--emerald)',
+              background: 'var(--neon-emerald)',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center'
+              justifyContent: 'center',
+              boxShadow: '0 0 20px var(--neon-emerald-glow)'
             }}>
-              <CheckCircle2 size={24} color="#07090e" strokeWidth={2.5} />
+              <CheckCircle2 size={28} color="#030712" strokeWidth={2.5} />
             </div>
             <div>
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#fff' }}>
-                Attack Vector Neutralized: {result.scenario}
+              <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#fff' }}>
+                Exploit Neutralized: {result.scenario}
               </h3>
               <p style={{ color: 'var(--text-dim)', fontSize: '0.82rem' }}>
-                ModelLedger Cryptographic Protocol Enforcement Live Audit
+                ModelLedger Cryptographic Consensus & Lineage Check
               </p>
             </div>
           </div>
 
-          <p style={{ color: 'var(--text-main)', fontSize: '0.9rem', marginBottom: '18px', lineHeight: 1.5 }}>
+          <p style={{ color: 'var(--text-main)', fontSize: '0.92rem', marginBottom: '20px', lineHeight: 1.6 }}>
             {result.description}
           </p>
 
-          {/* Hashes comparison for Silent Tamper */}
+          {/* Hashes Comparison */}
           {result.originalHash && (
             <div style={{
               display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              gap: '12px',
-              background: 'rgba(7, 9, 14, 0.8)',
-              padding: '16px',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+              gap: '14px',
+              background: 'rgba(7, 11, 20, 0.85)',
+              padding: '18px',
               borderRadius: 'var(--radius-sm)',
               border: '1px solid var(--border-subtle)',
-              marginBottom: '18px'
+              marginBottom: '20px'
             }}>
               <div>
-                <div style={{ fontSize: '0.72rem', color: 'var(--emerald)', fontWeight: 600, marginBottom: '4px' }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--neon-emerald)', fontWeight: 700, marginBottom: '6px' }}>
                   GENESIS REGISTERED HASH:
                 </div>
-                <div className="mono-tag" style={{ color: 'var(--text-muted)', fontSize: '0.78rem', wordBreak: 'break-all' }}>
+                <div className="mono-tag" style={{ color: 'var(--text-muted)', fontSize: '0.82rem', wordBreak: 'break-all' }}>
                   {result.originalHash}
                 </div>
               </div>
               <div>
-                <div style={{ fontSize: '0.72rem', color: 'var(--crimson)', fontWeight: 600, marginBottom: '4px' }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--neon-crimson)', fontWeight: 700, marginBottom: '6px' }}>
                   TAMPERED ARTIFACT HASH:
                 </div>
-                <div className="mono-tag" style={{ color: 'var(--crimson)', fontSize: '0.78rem', wordBreak: 'break-all' }}>
+                <div className="mono-tag" style={{ color: 'var(--neon-crimson)', fontSize: '0.82rem', wordBreak: 'break-all' }}>
                   {result.tamperedHash}
                 </div>
               </div>
             </div>
           )}
 
-          {/* Rejection notice */}
+          {/* Rejection Details */}
           {result.rejectionReason && (
             <div style={{
-              padding: '12px 16px',
+              padding: '14px 18px',
               borderRadius: 'var(--radius-sm)',
-              background: 'rgba(239, 68, 68, 0.15)',
-              border: '1px solid rgba(239, 68, 68, 0.3)',
-              color: 'var(--crimson)',
-              fontSize: '0.82rem',
-              marginBottom: '16px'
+              background: 'rgba(244, 63, 94, 0.15)',
+              border: '1px solid rgba(244, 63, 94, 0.4)',
+              color: 'var(--neon-crimson)',
+              fontSize: '0.85rem',
+              marginBottom: '18px'
             }}>
               <strong>EVM Transaction Reversion: </strong> {result.rejectionReason}
             </div>
           )}
 
           <div style={{
-            padding: '12px 16px',
+            padding: '14px 18px',
             borderRadius: 'var(--radius-sm)',
             background: 'rgba(16, 185, 129, 0.15)',
-            border: '1px solid rgba(16, 185, 129, 0.35)',
-            color: 'var(--emerald)',
-            fontSize: '0.88rem',
-            fontWeight: 600
+            border: '1px solid rgba(16, 185, 129, 0.4)',
+            color: 'var(--neon-emerald)',
+            fontSize: '0.9rem',
+            fontWeight: 700
           }}>
             🛡️ Protocol Conclusion: {result.conclusion}
           </div>

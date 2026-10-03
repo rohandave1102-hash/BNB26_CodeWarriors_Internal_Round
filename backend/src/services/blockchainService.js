@@ -14,6 +14,8 @@ class BlockchainService {
     this.fallbackRecords = new Map();
     this.fallbackLineage = new Map();
     this.fallbackDisputes = new Map();
+
+    this.init();
   }
 
   async checkPortOpen(port = 8545, host = "127.0.0.1") {
@@ -48,7 +50,7 @@ class BlockchainService {
       const isNodeRunning = await this.checkPortOpen(8545, "127.0.0.1");
       if (!isNodeRunning) {
         console.log("ℹ️  Local EVM node (port 8545) is not running.");
-        console.log("   👉 Optional: To enable on-chain EVM, run 'npx hardhat node' in /blockchain");
+        console.log("   👉 To enable on-chain EVM: run 'npx hardhat node' in /blockchain");
         console.log("   👉 Operating seamlessly in Standalone Cryptographic Mode.");
         this.isContractConnected = false;
         return;
@@ -58,15 +60,7 @@ class BlockchainService {
       this.contractAddress = config.contractAddress;
 
       const rpcUrl = process.env.RPC_URL || "http://127.0.0.1:8545";
-      const staticNet = ethers.Network.from({ 
-        name: config.network || "hardhat", 
-        chainId: config.chainId || 31337 
-      });
-      
-      this.provider = new ethers.JsonRpcProvider(rpcUrl, staticNet, { staticNetwork: staticNet });
-
-      // Verify node is responsive
-      await this.provider.getBlockNumber();
+      this.provider = new ethers.JsonRpcProvider(rpcUrl, undefined, { staticNetwork: true });
 
       // Use default account 0 from local node or private key
       const privateKey = process.env.PRIVATE_KEY || "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
@@ -76,7 +70,7 @@ class BlockchainService {
       this.isContractConnected = true;
       console.log(`🔗 Connected on-chain to ModelLedger at ${this.contractAddress}`);
     } catch (err) {
-      console.log("ℹ️  Operating in Standalone Cryptographic Mode (Node offline or contract not deployed yet)");
+      console.log("ℹ️  Operating in Standalone Cryptographic Mode:", err.message);
       this.isContractConnected = false;
     }
   }

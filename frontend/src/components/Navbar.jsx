@@ -1,121 +1,110 @@
 import React from 'react';
-import { Shield, CheckCircle2, AlertOctagon, Cpu, Database, Activity } from 'lucide-react';
+import { Shield, Sparkles, Activity } from 'lucide-react';
 
-export default function Navbar({ activeTab, setActiveTab, stats }) {
+export default function Navbar({ stats }) {
   return (
     <header style={{
-      borderBottom: '1px solid var(--border-subtle)',
-      backgroundColor: 'rgba(7, 9, 14, 0.85)',
-      backdropFilter: 'blur(16px)',
       position: 'sticky',
       top: 0,
-      zIndex: 50,
-      padding: '0 24px'
+      zIndex: 100,
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
+      backgroundColor: 'rgba(3, 7, 18, 0.65)',
+      borderBottom: '1px solid rgba(255, 255, 255, 0.07)',
+      padding: '0 32px'
     }}>
       <div style={{
-        maxWidth: '1360px',
+        maxWidth: '1440px',
         margin: '0 auto',
+        height: '76px',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'space-between',
-        height: '74px'
+        justifyContent: 'space-between'
       }}>
-        {/* Logo & Brand */}
+        {/* Brand */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
           <div style={{
-            width: '42px',
-            height: '42px',
-            borderRadius: '12px',
+            position: 'relative',
+            width: '44px',
+            height: '44px',
+            borderRadius: '14px',
             background: 'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 0 20px rgba(16, 185, 129, 0.4)'
+            boxShadow: '0 0 25px rgba(16, 185, 129, 0.45)',
+            transform: 'perspective(600px) rotateX(8deg) rotateY(-8deg)'
           }}>
-            <Shield size={24} color="#07090e" strokeWidth={2.5} />
+            <Shield size={24} color="#030712" strokeWidth={2.5} />
+            <span style={{
+              position: 'absolute',
+              top: '-3px',
+              right: '-3px',
+              width: '10px',
+              height: '10px',
+              borderRadius: '50%',
+              backgroundColor: '#38bdf8',
+              boxShadow: '0 0 10px #38bdf8'
+            }} />
           </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '-0.02em', color: '#fff' }}>
-                Model<span style={{ color: 'var(--emerald)' }}>Ledger</span>
+              <span style={{
+                fontSize: '1.35rem',
+                fontWeight: 900,
+                letterSpacing: '-0.03em',
+                fontFamily: 'var(--font-display)',
+                color: '#fff'
+              }}>
+                Model<span style={{ color: 'var(--neon-emerald)' }}>Ledger</span>
               </span>
               <span style={{
                 fontSize: '0.65rem',
-                padding: '2px 7px',
-                borderRadius: '4px',
+                fontWeight: 800,
+                letterSpacing: '0.08em',
+                padding: '2px 8px',
+                borderRadius: '6px',
                 background: 'rgba(16, 185, 129, 0.15)',
-                color: 'var(--emerald)',
-                fontWeight: 700,
-                letterSpacing: '0.05em'
+                color: 'var(--neon-emerald)',
+                border: '1px solid rgba(16, 185, 129, 0.3)'
               }}>
-                EVM v1.0
+                EVM PROTOCOL
               </span>
             </div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
-              Cryptographic AI Provenance & Multi-System Trust Protocol
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', letterSpacing: '0.02em' }}>
+              Autonomous AI Provenance & Multi-Model Trust Engine
             </div>
           </div>
         </div>
 
-        {/* Navigation Tabs */}
-        <nav style={{ display: 'flex', gap: '6px', background: 'rgba(15, 23, 42, 0.6)', padding: '5px', borderRadius: '12px', border: '1px solid var(--border-subtle)' }}>
-          {[
-            { id: 'verify', label: 'Verify & Audit', icon: Shield },
-            { id: 'register', label: 'Register Genesis', icon: Cpu },
-            { id: 'transform', label: 'Log Transformation', icon: Database },
-            { id: 'adversarial', label: 'Adversarial Lab', icon: AlertOctagon }
-          ].map(tab => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '9px 16px',
-                  borderRadius: '9px',
-                  fontSize: '0.85rem',
-                  fontWeight: 600,
-                  backgroundColor: isActive ? 'var(--emerald)' : 'transparent',
-                  color: isActive ? '#07090e' : 'var(--text-muted)',
-                  boxShadow: isActive ? '0 0 16px rgba(16, 185, 129, 0.35)' : 'none'
-                }}
-              >
-                <Icon size={16} strokeWidth={isActive ? 2.5 : 2} />
-                {tab.label}
-              </button>
-            );
-          })}
-        </nav>
-
-        {/* Network & Stats pill */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        {/* Minimal Right Badges */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          {/* Live Node Pill */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '8px',
-            padding: '7px 14px',
+            gap: '10px',
+            padding: '7px 16px',
             borderRadius: '9999px',
-            background: 'rgba(13, 18, 29, 0.9)',
-            border: '1px solid var(--border-subtle)',
+            background: 'rgba(15, 23, 42, 0.6)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            backdropFilter: 'blur(10px)',
             fontSize: '0.8rem'
           }}>
             <span style={{
               width: '8px',
               height: '8px',
               borderRadius: '50%',
-              backgroundColor: stats?.isContractConnected ? 'var(--emerald)' : 'var(--cyan)',
-              boxShadow: `0 0 8px ${stats?.isContractConnected ? 'var(--emerald)' : 'var(--cyan)'}`
+              backgroundColor: stats?.isContractConnected ? 'var(--neon-emerald)' : 'var(--neon-cyan)',
+              boxShadow: `0 0 12px ${stats?.isContractConnected ? 'var(--neon-emerald)' : 'var(--neon-cyan)'}`,
+              animation: 'pulseGlow 2s infinite ease-in-out'
             }} />
-            <span style={{ color: 'var(--text-muted)' }}>
-              {stats?.isContractConnected ? 'Hardhat EVM (31337)' : 'Cryptographic Engine'}
+            <span style={{ color: 'var(--text-muted)', fontWeight: 500 }}>
+              {stats?.isContractConnected ? 'Hardhat EVM (31337)' : 'Standalone Engine'}
             </span>
-            <span style={{ color: 'var(--text-dim)' }}>|</span>
-            <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>
-              {stats?.totalArtifacts || 0} Artifacts
+            <span style={{ color: 'rgba(255, 255, 255, 0.2)' }}>|</span>
+            <span style={{ color: '#fff', fontWeight: 700 }}>
+              {stats?.totalArtifacts || 0} Anchored
             </span>
           </div>
         </div>
