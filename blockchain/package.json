@@ -1,0 +1,15 @@
+{
+  "name": "model-ledger-blockchain",
+  "version": "1.0.0",
+  "description": "Smart contracts and tests for ModelLedger AI Provenance Tracker",
+  "scripts": {
+    "test": "hardhat test",
+    "compile": "hardhat compile",
+    "node": "hardhat node",
+    "deploy": "hardhat run scripts/deploy.js --network localhost"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "hardhat": "^2.22.10"
+  }
+}
