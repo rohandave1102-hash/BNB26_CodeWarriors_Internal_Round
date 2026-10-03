@@ -30,10 +30,11 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: err.message || "Internal server error" });
 });
 
-app.listen(PORT, async () => {
+app.listen(PORT, '0.0.0.0', async () => {
   console.log(`\n=================================================`);
   console.log(`🛡️  ModelLedger API Server running on port ${PORT}`);
-  console.log(`🔗  Endpoint: http://localhost:${PORT}`);
+  console.log(`🔗  Local:   http://localhost:${PORT}`);
+  console.log(`🔗  Network: http://127.0.0.1:${PORT}`);
   console.log(`=================================================\n`);
   
   // Initialize blockchain service connection

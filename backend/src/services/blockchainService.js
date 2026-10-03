@@ -18,22 +18,49 @@ class BlockchainService {
     this.init();
   }
 
+  async checkPortOpen(port = 8545, host = "127.0.0.1") {
+    const net = require("net");
+    return new Promise((resolve) => {
+      const socket = new net.Socket();
+      socket.setTimeout(800);
+      socket.on("connect", () => {
+        socket.destroy();
+        resolve(true);
+      });
+      socket.on("timeout", () => {
+        socket.destroy();
+        resolve(false);
+      });
+      socket.on("error", () => {
+        socket.destroy();
+        resolve(false);
+      });
+      socket.connect(port, host);
+    });
+  }
+
   async init() {
     const configPath = path.join(__dirname, "../config/contractConfig.json");
     if (!fs.existsSync(configPath)) {
-      console.warn("⚠️ contractConfig.json not found yet. Using local ledger engine until deployment.");
+      console.log("ℹ️  No contractConfig.json found. Operating in Standalone Cryptographic Mode.");
       return;
     }
 
     try {
+      const isNodeRunning = await this.checkPortOpen(8545, "127.0.0.1");
+      if (!isNodeRunning) {
+        console.log("ℹ️  Local EVM node (port 8545) is not running.");
+        console.log("   👉 To enable on-chain EVM: run 'npx hardhat node' in /blockchain");
+        console.log("   👉 Operating seamlessly in Standalone Cryptographic Mode.");
+        this.isContractConnected = false;
+        return;
+      }
+
       const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
       this.contractAddress = config.contractAddress;
 
       const rpcUrl = process.env.RPC_URL || "http://127.0.0.1:8545";
-      this.provider = new ethers.JsonRpcProvider(rpcUrl);
-
-      // Check if node is reachable
-      await this.provider.getBlockNumber();
+      this.provider = new ethers.JsonRpcProvider(rpcUrl, undefined, { staticNetwork: true });
 
       // Use default account 0 from local node or private key
       const privateKey = process.env.PRIVATE_KEY || "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
@@ -41,9 +68,9 @@ class BlockchainService {
 
       this.contract = new ethers.Contract(this.contractAddress, config.abi, this.signer);
       this.isContractConnected = true;
-      console.log(`🔗 BlockchainService connected to ModelLedger at ${this.contractAddress}`);
+      console.log(`🔗 Connected on-chain to ModelLedger at ${this.contractAddress}`);
     } catch (err) {
-      console.warn("⚠️ Blockchain node unreachable, running in resilient standalone cryptographic mode:", err.message);
+      console.log("ℹ️  Operating in Standalone Cryptographic Mode:", err.message);
       this.isContractConnected = false;
     }
   }
