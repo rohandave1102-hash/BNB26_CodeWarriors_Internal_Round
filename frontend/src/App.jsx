@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import FloatingDock from './components/FloatingDock';
 import CyberCursor from './components/CyberCursor';
-import VerifyAudit from './components/VerifyAudit';
-import RegisterGenesis from './components/RegisterGenesis';
-import LogTransformation from './components/LogTransformation';
-import AdversarialLab from './components/AdversarialLab';
+import VerifyView from './components/VerifyView';
+import OriginateView from './components/OriginateView';
+import TransformView from './components/TransformView';
+import WatermarkView from './components/WatermarkView';
+import SandboxView from './components/SandboxView';
 import { getStats } from './services/api';
 
 export default function App() {
@@ -64,6 +65,17 @@ export default function App() {
         pointerEvents: 'none',
         zIndex: 0
       }} />
+      <div style={{
+        position: 'fixed',
+        bottom: '10%',
+        left: '-10%',
+        width: '600px',
+        height: '600px',
+        borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(168, 85, 247, 0.06) 0%, transparent 70%)',
+        pointerEvents: 'none',
+        zIndex: 0
+      }} />
 
       {/* Classy Minimalist Navbar */}
       <Navbar stats={stats} />
@@ -73,19 +85,22 @@ export default function App() {
         flex: 1,
         position: 'relative',
         zIndex: 1,
-        paddingBottom: '120px' // Space for floating dock
+        paddingBottom: '120px' // Clearance for floating dock
       }}>
         {activeTab === 'verify' && (
-          <VerifyAudit onSwitchTab={(tab) => setActiveTab(tab)} />
+          <VerifyView onSwitchTab={(tab) => setActiveTab(tab)} />
         )}
-        {activeTab === 'register' && (
-          <RegisterGenesis onRegistrationSuccess={fetchStats} />
+        {activeTab === 'originate' && (
+          <OriginateView onRegistrationSuccess={fetchStats} />
         )}
         {activeTab === 'transform' && (
-          <LogTransformation onTransformationSuccess={fetchStats} />
+          <TransformView onTransformationSuccess={fetchStats} />
+        )}
+        {activeTab === 'watermark' && (
+          <WatermarkView />
         )}
         {activeTab === 'adversarial' && (
-          <AdversarialLab />
+          <SandboxView />
         )}
       </main>
 
@@ -95,7 +110,7 @@ export default function App() {
       {/* Subdued Protocol Footer */}
       <footer style={{
         borderTop: '1px solid rgba(255, 255, 255, 0.05)',
-        padding: '28px 24px 130px 24px', // Extra bottom clearance for dock
+        padding: '28px 24px 130px 24px',
         textAlign: 'center',
         color: 'var(--text-dim)',
         fontSize: '0.8rem',
@@ -104,10 +119,10 @@ export default function App() {
       }}>
         <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '6px' }}>
           <div>
-            <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>ModelLedger Protocol</span> • EVM-Anchored Autonomous AI Lineage Engine
+            <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>ModelLedger Protocol v2</span> • Python FastAPI & EVM Trust Engine
           </div>
           <div style={{ fontSize: '0.72rem' }}>
-            Multi-Tier Trust • Salted Keccak-256 Prompt Commitments • Perceptual pHash Integrity • BitnBuild 2026
+            Multi-Tier Trust • Salted Keccak-256 Commitments • LSB Steganography • IPFS CAS • C2PA Manifests • BitnBuild 2026
           </div>
         </div>
       </footer>
