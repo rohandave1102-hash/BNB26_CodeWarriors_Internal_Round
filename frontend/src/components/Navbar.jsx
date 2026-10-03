@@ -1,15 +1,15 @@
 import React from 'react';
-import { Shield, ExternalLink, Terminal } from 'lucide-react';
+import { Shield, ExternalLink, Terminal, BookOpen, User, LogOut } from 'lucide-react';
 
-export default function Navbar({ stats }) {
+export default function Navbar({ stats, onOpenSpecs, onOpenAuth, user, onSignOut }) {
   return (
     <header style={{
       position: 'sticky',
       top: 0,
       zIndex: 100,
-      backdropFilter: 'blur(20px)',
-      WebkitBackdropFilter: 'blur(20px)',
-      backgroundColor: 'rgba(3, 7, 18, 0.7)',
+      backdropFilter: 'blur(24px)',
+      WebkitBackdropFilter: 'blur(24px)',
+      backgroundColor: 'rgba(5, 5, 14, 0.75)',
       borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
       padding: '0 32px'
     }}>
@@ -28,14 +28,14 @@ export default function Navbar({ stats }) {
             width: '42px',
             height: '42px',
             borderRadius: '12px',
-            background: 'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)',
+            background: 'linear-gradient(135deg, #00f0ff 0%, #8b5cf6 100%)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 0 25px rgba(16, 185, 129, 0.45)',
+            boxShadow: '0 0 25px rgba(0, 240, 255, 0.45)',
             transform: 'perspective(600px) rotateX(8deg) rotateY(-8deg)'
           }}>
-            <Shield size={23} color="#030712" strokeWidth={2.5} />
+            <Shield size={23} color="#03030a" strokeWidth={2.5} />
             <span style={{
               position: 'absolute',
               top: '-3px',
@@ -43,8 +43,8 @@ export default function Navbar({ stats }) {
               width: '10px',
               height: '10px',
               borderRadius: '50%',
-              backgroundColor: '#38bdf8',
-              boxShadow: '0 0 10px #38bdf8'
+              backgroundColor: '#00f0ff',
+              boxShadow: '0 0 10px #00f0ff'
             }} />
           </div>
           <div>
@@ -56,7 +56,7 @@ export default function Navbar({ stats }) {
                 fontFamily: 'var(--font-display)',
                 color: '#fff'
               }}>
-                Model<span style={{ color: 'var(--neon-emerald)' }}>Ledger</span>
+                Model<span style={{ color: 'var(--neon-cyan)' }}>Ledger</span>
               </span>
               <span style={{
                 fontSize: '0.65rem',
@@ -64,21 +64,43 @@ export default function Navbar({ stats }) {
                 letterSpacing: '0.08em',
                 padding: '2px 8px',
                 borderRadius: '6px',
-                background: 'rgba(16, 185, 129, 0.15)',
-                color: 'var(--neon-emerald)',
-                border: '1px solid rgba(16, 185, 129, 0.3)'
+                background: 'rgba(0, 240, 255, 0.15)',
+                color: 'var(--neon-cyan)',
+                border: '1px solid rgba(0, 240, 255, 0.3)'
               }}>
-                v2 FASTAPI + EVM
+                EVM + C2PA
               </span>
             </div>
             <div style={{ fontSize: '0.74rem', color: 'var(--text-dim)' }}>
-              Decentralized AI Provenance, C2PA Credentials & Stegano Forensics
+              Autonomous AI Provenance & Steganographic Forensics
             </div>
           </div>
         </div>
 
-        {/* Minimal Right Badges */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+        {/* Minimal Right Badges & Controls */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          {/* Guide & Specs Button */}
+          <button
+            onClick={onOpenSpecs}
+            className="btn-cyber"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '7px 14px',
+              borderRadius: '999px',
+              background: 'rgba(0, 240, 255, 0.1)',
+              border: '1px solid rgba(0, 240, 255, 0.3)',
+              color: 'var(--neon-cyan)',
+              fontSize: '0.78rem',
+              fontWeight: 700,
+              cursor: 'pointer'
+            }}
+          >
+            <BookOpen size={14} />
+            <span>📖 Guide & Specs</span>
+          </button>
+
           {/* Swagger link */}
           <a
             href="http://localhost:5000/docs"
@@ -88,7 +110,7 @@ export default function Navbar({ stats }) {
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
-              padding: '6px 12px',
+              padding: '7px 12px',
               borderRadius: '8px',
               background: 'rgba(255, 255, 255, 0.04)',
               border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -98,8 +120,8 @@ export default function Navbar({ stats }) {
               transition: 'all 0.2s ease'
             }}
           >
-            <Terminal size={14} color="var(--neon-cyan)" />
-            <span>FastAPI Docs</span>
+            <Terminal size={14} color="var(--neon-purple)" />
+            <span>API Docs</span>
             <ExternalLink size={12} />
           </a>
 
@@ -110,7 +132,7 @@ export default function Navbar({ stats }) {
             gap: '10px',
             padding: '7px 16px',
             borderRadius: '9999px',
-            background: 'rgba(15, 23, 42, 0.65)',
+            background: 'rgba(12, 12, 24, 0.7)',
             border: '1px solid rgba(255, 255, 255, 0.1)',
             fontSize: '0.8rem'
           }}>
@@ -122,13 +144,82 @@ export default function Navbar({ stats }) {
               boxShadow: `0 0 12px ${stats?.isContractConnected ? 'var(--neon-emerald)' : 'var(--neon-cyan)'}`
             }} />
             <span style={{ color: 'var(--text-muted)', fontWeight: 500 }}>
-              {stats?.isContractConnected ? 'Hardhat EVM (31337)' : 'Resilient Cryptographic Engine'}
+              {stats?.isContractConnected ? 'Hardhat EVM (31337)' : 'Resilient Cryptographic Mode'}
             </span>
             <span style={{ color: 'rgba(255, 255, 255, 0.2)' }}>|</span>
             <span style={{ color: '#fff', fontWeight: 700 }}>
               {stats?.totalArtifacts || 0} Anchored
             </span>
           </div>
+
+          {/* User Auth Profile Pill */}
+          {user ? (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              padding: '5px 12px',
+              borderRadius: '999px',
+              background: 'rgba(139, 92, 246, 0.15)',
+              border: '1px solid rgba(139, 92, 246, 0.35)'
+            }}>
+              <div style={{
+                width: '26px',
+                height: '26px',
+                borderRadius: '50%',
+                background: 'var(--neon-purple)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#03030a',
+                fontWeight: 800,
+                fontSize: '0.72rem'
+              }}>
+                {user.email?.[0]?.toUpperCase() || 'U'}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#fff' }}>
+                  {user.user_metadata?.full_name || user.email.split('@')[0]}
+                </span>
+                <span style={{ fontSize: '0.62rem', color: 'var(--neon-purple)' }}>
+                  {user.role || 'Auditor'}
+                </span>
+              </div>
+              <button
+                onClick={onSignOut}
+                title="Sign Out"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--text-dim)',
+                  cursor: 'pointer',
+                  marginLeft: '4px',
+                  display: 'flex',
+                  alignItems: 'center'
+                }}
+              >
+                <LogOut size={14} />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={onOpenAuth}
+              className="btn-cyber"
+              style={{
+                padding: '7px 16px',
+                borderRadius: '999px',
+                background: 'linear-gradient(135deg, #00f0ff 0%, #8b5cf6 100%)',
+                color: '#03030a',
+                fontSize: '0.78rem',
+                fontWeight: 800,
+                border: 'none',
+                cursor: 'pointer'
+              }}
+            >
+              <User size={14} />
+              <span>Sign In / Demo</span>
+            </button>
+          )}
         </div>
       </div>
     </header>

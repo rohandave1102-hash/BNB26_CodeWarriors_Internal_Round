@@ -1,9 +1,10 @@
 import React from 'react';
-import { ShieldCheck, PlusCircle, GitBranch, Eye, Zap } from 'lucide-react';
+import { Activity, ShieldCheck, PlusCircle, GitBranch, Eye, Zap } from 'lucide-react';
 
 export default function FloatingDock({ activeTab, setActiveTab }) {
   const routes = [
-    { id: 'verify', label: 'Verify & Forensics', icon: ShieldCheck, badge: 'Dual-Hash' },
+    { id: 'dashboard', label: 'Dashboard', icon: Activity, badge: 'Live' },
+    { id: 'verify', label: 'Verify & Forensics', icon: ShieldCheck },
     { id: 'originate', label: 'Originate', icon: PlusCircle },
     { id: 'transform', label: 'Edit History', icon: GitBranch },
     { id: 'watermark', label: 'Stegano Watermark', icon: Eye, badge: 'LSB' },
@@ -29,8 +30,8 @@ export default function FloatingDock({ activeTab, setActiveTab }) {
                 fontSize: '0.6rem',
                 padding: '2px 6px',
                 borderRadius: '999px',
-                background: isActive ? 'rgba(3, 7, 18, 0.3)' : 'rgba(16, 185, 129, 0.2)',
-                color: isActive ? '#030712' : 'var(--neon-emerald)',
+                background: isActive ? 'rgba(3, 3, 10, 0.3)' : 'rgba(0, 240, 255, 0.2)',
+                color: isActive ? '#03030a' : 'var(--neon-cyan)',
                 fontWeight: 800,
                 letterSpacing: '0.04em'
               }}>

@@ -2,15 +2,23 @@ import React, { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import FloatingDock from './components/FloatingDock';
 import CyberCursor from './components/CyberCursor';
+import DashboardView from './components/DashboardView';
 import VerifyView from './components/VerifyView';
 import OriginateView from './components/OriginateView';
 import TransformView from './components/TransformView';
 import WatermarkView from './components/WatermarkView';
 import SandboxView from './components/SandboxView';
+import SpecsGuideModal from './components/SpecsGuideModal';
+import AuthModal from './components/AuthModal';
 import { getStats } from './services/api';
+import { getCurrentUser, signOut } from './services/supabase';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('verify');
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [isSpecsOpen, setIsSpecsOpen] = useState(false);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [user, setUser] = useState(null);
+
   const [stats, setStats] = useState({
     totalArtifacts: 0,
     isContractConnected: false
@@ -21,15 +29,30 @@ export default function App() {
       const data = await getStats();
       setStats(data);
     } catch (e) {
-      // Backend may be warming up
+      // Backend warming up
+    }
+  };
+
+  const loadUser = async () => {
+    try {
+      const u = await getCurrentUser();
+      setUser(u);
+    } catch (e) {
+      // Offline fallback
     }
   };
 
   useEffect(() => {
     fetchStats();
+    loadUser();
     const interval = setInterval(fetchStats, 5000);
     return () => clearInterval(interval);
   }, []);
+
+  const handleSignOut = async () => {
+    await signOut();
+    setUser(null);
+  };
 
   return (
     <div style={{
@@ -42,43 +65,52 @@ export default function App() {
       {/* Interactive Cyber Follower Cursor */}
       <CyberCursor />
 
-      {/* Futuristic Background Ambient Glows */}
+      {/* Futuristic Background Ambient Glows & Holographic Meshes */}
       <div style={{
         position: 'fixed',
         top: '-15%',
         left: '20%',
-        width: '600px',
-        height: '600px',
+        width: '650px',
+        height: '650px',
         borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, transparent 70%)',
+        background: 'radial-gradient(circle, rgba(0, 240, 255, 0.1) 0%, transparent 70%)',
         pointerEvents: 'none',
-        zIndex: 0
+        zIndex: 0,
+        animation: 'floatOrbs 12s infinite ease-in-out'
       }} />
       <div style={{
         position: 'fixed',
-        top: '40%',
+        top: '35%',
         right: '-10%',
-        width: '700px',
-        height: '700px',
+        width: '750px',
+        height: '750px',
         borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(6, 182, 212, 0.06) 0%, transparent 70%)',
+        background: 'radial-gradient(circle, rgba(139, 92, 246, 0.08) 0%, transparent 70%)',
         pointerEvents: 'none',
-        zIndex: 0
+        zIndex: 0,
+        animation: 'floatOrbs 15s infinite ease-in-out reverse'
       }} />
       <div style={{
         position: 'fixed',
-        bottom: '10%',
+        bottom: '5%',
         left: '-10%',
-        width: '600px',
-        height: '600px',
+        width: '650px',
+        height: '650px',
         borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(168, 85, 247, 0.06) 0%, transparent 70%)',
+        background: 'radial-gradient(circle, rgba(0, 255, 136, 0.07) 0%, transparent 70%)',
         pointerEvents: 'none',
-        zIndex: 0
+        zIndex: 0,
+        animation: 'floatOrbs 18s infinite ease-in-out'
       }} />
 
       {/* Classy Minimalist Navbar */}
-      <Navbar stats={stats} />
+      <Navbar
+        stats={stats}
+        onOpenSpecs={() => setIsSpecsOpen(true)}
+        onOpenAuth={() => setIsAuthOpen(true)}
+        user={user}
+        onSignOut={handleSignOut}
+      />
 
       {/* Main Content Area */}
       <main style={{
@@ -87,6 +119,13 @@ export default function App() {
         zIndex: 1,
         paddingBottom: '120px' // Clearance for floating dock
       }}>
+        {activeTab === 'dashboard' && (
+          <DashboardView
+            stats={stats}
+            onNavigate={(tab) => setActiveTab(tab)}
+            user={user}
+          />
+        )}
         {activeTab === 'verify' && (
           <VerifyView onSwitchTab={(tab) => setActiveTab(tab)} />
         )}
@@ -106,6 +145,23 @@ export default function App() {
 
       {/* Futuristic Floating Island Menu */}
       <FloatingDock activeTab={activeTab} setActiveTab={setActiveTab} />
+
+      {/* Specifications & Guide Modal */}
+      <SpecsGuideModal
+        isOpen={isSpecsOpen}
+        onClose={() => setIsSpecsOpen(false)}
+        onNavigate={(tab) => {
+          setActiveTab(tab);
+          setIsSpecsOpen(false);
+        }}
+      />
+
+      {/* Supabase Authentication Modal */}
+      <AuthModal
+        isOpen={isAuthOpen}
+        onClose={() => setIsAuthOpen(false)}
+        onAuthSuccess={(u) => setUser(u)}
+      />
 
       {/* Subdued Protocol Footer */}
       <footer style={{
