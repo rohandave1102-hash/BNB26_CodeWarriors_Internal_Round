@@ -12,29 +12,24 @@ class BlockchainService:
         self.contract = None
         self.contract_address: Optional[str] = None
         self.account_address: Optional[str] = None
-        self.private_key: Optional[str] = None
         
-        # Dual-mode In-Memory Fallback State (Always resilient)
         self.in_memory_records: Dict[str, Dict[str, Any]] = {}
         self.in_memory_transformations: Dict[str, List[str]] = {}
         self.in_memory_disputes: Dict[str, List[Dict[str, Any]]] = {}
         self.in_memory_hashes: List[str] = []
 
     def _is_port_open(self, host: str = "127.0.0.1", port: int = 8545, timeout: float = 1.0) -> bool:
-        """Raw TCP pre-check to prevent socket hanging."""
         try:
             with socket.create_connection((host, port), timeout=timeout):
                 return True
         except (socket.timeout, ConnectionRefusedError, OSError):
             return False
-
     async def connect(self):
-        """Attempts to connect to Hardhat EVM node on localhost:8545."""
         rpc_url = os.getenv("HARDHAT_RPC_URL", "http://127.0.0.1:8545")
         config_path = os.path.join(os.path.dirname(__file__), "..", "config", "contractConfig.json")
 
         if not os.path.exists(config_path):
-            print("[WARN] contractConfig.json not found; running in standalone cryptographic mode.")
+            print("[WARN] contractConfig.json not found; standalone mode active.")
             return
 
         with open(config_path, "r", encoding="utf-8") as f:
@@ -44,21 +39,38 @@ class BlockchainService:
         abi = config.get("abi")
 
         if not self._is_port_open("127.0.0.1", 8545):
-            print("[WARN] Hardhat EVM (127.0.0.1:8545) is currently offline. Operating in standalone resilient mode.")
+            print("[WARN] Hardhat EVM offline. Operating in standalone mode.")
             return
 
         try:
             self.w3 = Web3(Web3.HTTPProvider(rpc_url, request_kwargs={'timeout': 3}))
             if self.w3.is_connected():
                 self.contract = self.w3.eth.contract(address=self.contract_address, abi=abi)
-                # Use default Hardhat account #0
                 self.account_address = self.w3.eth.accounts[0] if self.w3.eth.accounts else config.get("deployerAddress")
                 self.is_connected = True
                 print(f"[INFO] Connected on-chain to ModelLedger at {self.contract_address}")
+                self.sync_local_cache()
             else:
                 print("[WARN] Web3 could not establish provider connection.")
         except Exception as e:
-            print(f"[WARN] Blockchain connection error: {e}. Running in standalone mode.")
+            print(f"[WARN] Blockchain connection error: {e}. Standalone mode active.")
+
+    def sync_local_cache(self):
+        try:
+            total_elements = self.contract.functions.getTotalArtifacts().call()
+            print(f"[SYNC] Syncing {total_elements} historic items from EVM node...")
+            for i in range(total_elements):
+                raw_hash = self.contract.functions.allArtifactHashes(i).call()
+                exists, current_rec, chain = self.contract.functions.verifyLineage(raw_hash).call()
+                if exists:
+                    formatted = self._tuple_to_record(current_rec)
+                    f_hash_str = formatted["fileHash"].lower()
+                    self.in_memory_records[f_hash_str] = formatted
+                    if f_hash_str not in self.in_memory_hashes:
+                        self.in_memory_hashes.append(f_hash_str)
+            print("[SYNC] Local cache fully aligned with contract state.")
+        except Exception as e:
+            print(f"[WARN] Automated synchronization failed: {e}")
 
     @property
     def total_artifacts(self) -> int:
@@ -68,7 +80,6 @@ class BlockchainService:
             except Exception:
                 pass
         return len(self.in_memory_hashes)
-
     def register_genesis(
         self,
         file_hash: str,
@@ -79,11 +90,9 @@ class BlockchainService:
         metadata_uri: str,
         is_oracle_attested: bool = True
     ) -> Dict[str, Any]:
-        """Registers genesis artifact on-chain with automatic fallback."""
         now = int(time.time())
-        tier = 2 if is_oracle_attested else 1  # 2: VERIFIED_TRUSTED, 1: SELF_ASSERTED
+        tier = 2 if is_oracle_attested else 1
 
-        # Always update local state
         record = {
             "fileHash": file_hash,
             "perceptualHash": perceptual_hash,
@@ -120,16 +129,9 @@ class BlockchainService:
                 tx_hash = receipt.transactionHash.hex()
                 record["blockNumber"] = receipt.blockNumber
             except Exception as e:
-                print(f"[WARN] On-chain tx failed ({e}), saved in resilient local ledger.")
+                print(f"[WARN] On-chain tx failed ({e}), saved locally.")
 
-        return {
-            "success": True,
-            "fileHash": file_hash,
-            "txHash": tx_hash,
-            "trustTier": tier,
-            "record": record
-        }
-
+        return {"success": True, "fileHash": file_hash, "txHash": tx_hash, "trustTier": tier, "record": record}
     def log_transformation(
         self,
         new_hash: str,
@@ -139,7 +141,6 @@ class BlockchainService:
         application_name: str,
         metadata_uri: str
     ) -> Dict[str, Any]:
-        """Logs downstream transformation linking parent to child."""
         now = int(time.time())
         parent = self.in_memory_records.get(parent_hash.lower())
         tier = parent.get("trustTier", 1) if parent else 1
@@ -183,27 +184,16 @@ class BlockchainService:
                 tx_hash = receipt.transactionHash.hex()
                 record["blockNumber"] = receipt.blockNumber
             except Exception as e:
-                print(f"[WARN] On-chain transformation tx failed ({e}), saved in resilient local ledger.")
+                print(f"[WARN] On-chain transformation tx failed ({e}), saved locally.")
 
-        return {
-            "success": True,
-            "newHash": new_hash,
-            "parentHash": parent_hash,
-            "txHash": tx_hash,
-            "trustTier": tier,
-            "record": record
-        }
-
+        return {"success": True, "newHash": new_hash, "parentHash": parent_hash, "txHash": tx_hash, "trustTier": tier, "record": record}
     def verify_lineage(self, file_hash: str) -> Dict[str, Any]:
-        """Retrieves artifact existence and its full Merkle DAG ancestry back to Genesis."""
-        # Check on-chain first
         if self.is_connected and self.contract:
             try:
                 exists, current_rec, chain = self.contract.functions.verifyLineage(
                     bytes.fromhex(file_hash.replace("0x", ""))
                 ).call()
                 if exists:
-                    # Format tuple to dict
                     return {
                         "exists": True,
                         "currentRecord": self._tuple_to_record(current_rec),
@@ -212,7 +202,6 @@ class BlockchainService:
             except Exception:
                 pass
 
-        # Check in-memory store
         norm_hash = file_hash.lower()
         if norm_hash in self.in_memory_records:
             current = self.in_memory_records[norm_hash]
@@ -227,21 +216,11 @@ class BlockchainService:
                 else:
                     break
                 depth += 1
+            return {"exists": True, "currentRecord": current, "lineageChain": chain}
 
-            return {
-                "exists": True,
-                "currentRecord": current,
-                "lineageChain": chain
-            }
+        return {"exists": False, "currentRecord": None, "lineageChain": []}
 
-        return {
-            "exists": False,
-            "currentRecord": None,
-            "lineageChain": []
-        }
-
-    def find_by_perceptual_hash(self, target_phash: str, threshold: int = 10) -> Optional[Dict[str, Any]]:
-        """Finds closest registered artifact matching perceptual hash within Hamming distance threshold."""
+    def find_by_perceptual_hash(self, target_phash: str, threshold: int = 12) -> Optional[Dict[str, Any]]:
         from .hasher import hamming_distance
         best_match = None
         min_dist = threshold + 1
@@ -262,9 +241,7 @@ class BlockchainService:
                 "isReEncodedMatch": min_dist <= 6
             }
         return None
-
     def verify_prompt(self, file_hash: str, revealed_prompt: str, salt: str) -> bool:
-        """Verifies if the revealed prompt matches the stored commitment."""
         from .hasher import compute_prompt_commitment
         norm_hash = file_hash.lower()
         rec = self.in_memory_records.get(norm_hash)
@@ -278,20 +255,24 @@ class BlockchainService:
         return calc.lower() == stored_commitment.lower()
 
     def _tuple_to_record(self, t: Any) -> Dict[str, Any]:
-        return {
-            "fileHash": "0x" + (t[0].hex() if hasattr(t[0], 'hex') else str(t[0])),
-            "perceptualHash": "0x" + (t[1].hex() if hasattr(t[1], 'hex') else str(t[1])),
-            "promptCommitment": "0x" + (t[2].hex() if hasattr(t[2], 'hex') else str(t[2])),
-            "parentHash": "0x" + (t[3].hex() if hasattr(t[3], 'hex') else str(t[3])),
-            "creator": str(t[4]),
-            "issuerOracle": str(t[5]),
-            "trustTier": int(t[6]),
-            "aiModel": str(t[7]),
-            "actionType": str(t[8]),
-            "applicationName": str(t[9]),
-            "metadataURI": str(t[10]),
-            "timestamp": int(t[11]),
-            "blockNumber": int(t[12])
-        }
+        try:
+            return {
+                "fileHash": "0x" + (t[0].hex() if isinstance(t[0], bytes) else str(t[0]).replace("0x", "")),
+                "perceptualHash": "0x" + (t[1].hex() if isinstance(t[1], bytes) else str(t[1]).replace("0x", "")),
+                "promptCommitment": "0x" + (t[2].hex() if isinstance(t[2], bytes) else str(t[2]).replace("0x", "")),
+                "parentHash": "0x" + (t[3].hex() if isinstance(t[3], bytes) else str(t[3]).replace("0x", "")),
+                "creator": str(t[4]),
+                "issuerOracle": str(t[5]),
+                "trustTier": int(t[6]),
+                "aiModel": str(t[7]),
+                "actionType": str(t[8]),
+                "applicationName": str(t[9]),
+                "metadataURI": str(t[10]),
+                "timestamp": int(t[11]),
+                "blockNumber": int(t[12])
+            }
+        except Exception as e:
+            print(f"⚠️ Tuple parsing exception encountered: {e}")
+            return {}
 
 blockchain_service = BlockchainService()

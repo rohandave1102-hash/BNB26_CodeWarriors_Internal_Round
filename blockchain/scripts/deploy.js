@@ -24,7 +24,7 @@ async function main() {
     abi = artifact.abi;
   }
 
-  const outputDir = path.join(__dirname, "../../backend/src/config");
+  const outputDir = path.join(__dirname, "../../backend/app/config");
   if (!fs.existsSync(outputDir)) {
     fs.mkdirSync(outputDir, { recursive: true });
   }
