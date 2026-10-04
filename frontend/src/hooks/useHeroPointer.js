@@ -6,7 +6,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
  * Reusable pointer intelligence hook tracking:
  * - Position & normalized coordinates
  * - Instantaneous velocity & smoothed speed
- * - Idle time detection (triggers after ~600ms of stillness)
+ * - Idle time detection (triggers after ~600ms of stillness only inside hero)
  * - Magnetic snapping targets (buttons, CTAs, pills)
  * - Hero boundary detection & touch gestures
  */
@@ -14,6 +14,7 @@ export function useHeroPointer(heroContainerRef, options = {}) {
   const {
     idleThresholdMs = 600,
     snapSelector = 'button, a, .btn, .pill-nav-item, [role="button"]',
+    enabled = true,
   } = options;
 
   const stateRef = useRef({
@@ -26,7 +27,7 @@ export function useHeroPointer(heroContainerRef, options = {}) {
     speed: 0,
     xNorm: 0.5,
     yNorm: 0.35,
-    isOverHero: true,
+    isOverHero: enabled,
     isIdle: false,
     idleStartTime: performance.now(),
     snapTarget: null,
@@ -38,14 +39,19 @@ export function useHeroPointer(heroContainerRef, options = {}) {
   const lastMoveTimeRef = useRef(performance.now());
   const touchHoldTimerRef = useRef(null);
 
-  // Re-render state for consumers that need reactive state
   const [pointerSnapshot, setPointerSnapshot] = useState({
     isIdle: false,
-    isOverHero: true,
+    isOverHero: enabled,
     speed: 0,
   });
 
   const handlePointerMove = useCallback((e) => {
+    if (!enabled) {
+      stateRef.current.isOverHero = false;
+      stateRef.current.isIdle = false;
+      return;
+    }
+
     const S = stateRef.current;
     const now = performance.now();
     const dt = Math.max(1, now - lastMoveTimeRef.current);
@@ -71,13 +77,13 @@ export function useHeroPointer(heroContainerRef, options = {}) {
     S.xNorm = Math.max(0, Math.min(1, newX / window.innerWidth));
     S.yNorm = Math.max(0, Math.min(1, newY / window.innerHeight));
 
-    // Reset idle timer
-    if (dist > 1.5) {
+    // Reset idle timer on noticeable motion
+    if (dist > 2) {
       S.isIdle = false;
       S.idleStartTime = now;
     }
 
-    // Check if within hero container
+    // Check if pointer is currently inside hero container
     if (heroContainerRef?.current) {
       const rect = heroContainerRef.current.getBoundingClientRect();
       S.isOverHero = (
@@ -87,62 +93,79 @@ export function useHeroPointer(heroContainerRef, options = {}) {
         newY <= rect.bottom
       );
     } else {
-      // Default to top 85svh
-      S.isOverHero = newY < window.innerHeight * 0.85;
+      // Default: only top section when scrollY is near top
+      const scrollY = window.scrollY || 0;
+      S.isOverHero = scrollY < 400 && newY < window.innerHeight * 0.85;
     }
 
     // Magnetic snapping check
-    const target = document.elementFromPoint(newX, newY);
-    const snapEl = target?.closest(snapSelector);
-    if (snapEl) {
-      const rect = snapEl.getBoundingClientRect();
-      S.snapTarget = {
-        x: rect.left + rect.width / 2,
-        y: rect.top + rect.height / 2,
-        width: rect.width,
-        height: rect.height,
-      };
-      // Check data attributes or computed accent
-      const accent = snapEl.getAttribute('data-accent') ||
-        (snapEl.classList.contains('btn-primary') ? '#ff00c8' : '#00f0ff');
-      S.snapColor = accent;
+    if (S.isOverHero) {
+      const target = document.elementFromPoint(newX, newY);
+      const snapEl = target?.closest(snapSelector);
+      if (snapEl) {
+        const rect = snapEl.getBoundingClientRect();
+        S.snapTarget = {
+          x: rect.left + rect.width / 2,
+          y: rect.top + rect.height / 2,
+          width: rect.width,
+          height: rect.height,
+        };
+        const accent = snapEl.getAttribute('data-accent') ||
+          (snapEl.classList.contains('btn-primary') ? '#00f0ff' : '#a855f7');
+        S.snapColor = accent;
+      } else {
+        S.snapTarget = null;
+        S.snapColor = null;
+      }
     } else {
       S.snapTarget = null;
       S.snapColor = null;
+      S.isIdle = false;
     }
-  }, [heroContainerRef, snapSelector]);
+  }, [heroContainerRef, snapSelector, enabled]);
 
+  // Handle background canvas click only (ignore interactive elements and non-hero clicks)
   const handleClick = useCallback((e) => {
+    if (!enabled || !stateRef.current.isOverHero) return;
+
+    // Do NOT register clicks on buttons, links, inputs, navbar, or docks
+    const target = e.target;
+    if (
+      target.closest &&
+      target.closest('button, a, input, select, textarea, [role="button"], .dock-item, .pill-nav-item, .navbar, .glass, .card, .border-glow-wrapper')
+    ) {
+      return;
+    }
+
     stateRef.current.lastClick = {
       x: e.clientX,
       y: e.clientY,
       timestamp: performance.now(),
     };
-  }, []);
+  }, [enabled]);
 
   // Touch device support
   const handleTouchStart = useCallback((e) => {
+    if (!enabled) return;
     stateRef.current.isTouch = true;
     const touch = e.touches[0];
     if (!touch) return;
 
     handlePointerMove({ clientX: touch.clientX, clientY: touch.clientY });
 
-    // Press and hold for 400ms triggers dark-matter singularity
+    // Press and hold for 500ms triggers singularity
     touchHoldTimerRef.current = setTimeout(() => {
-      stateRef.current.isIdle = true;
-      stateRef.current.idleStartTime = performance.now();
-    }, 400);
-  }, [handlePointerMove]);
+      if (stateRef.current.isOverHero) {
+        stateRef.current.isIdle = true;
+        stateRef.current.idleStartTime = performance.now();
+      }
+    }, 500);
+  }, [handlePointerMove, enabled]);
 
   const handleTouchEnd = useCallback((e) => {
     if (touchHoldTimerRef.current) clearTimeout(touchHoldTimerRef.current);
-    if (e.changedTouches[0]) {
-      const touch = e.changedTouches[0];
-      handleClick({ clientX: touch.clientX, clientY: touch.clientY });
-    }
     stateRef.current.isIdle = false;
-  }, [handleClick]);
+  }, []);
 
   useEffect(() => {
     window.addEventListener('pointermove', handlePointerMove, { passive: true });
@@ -152,15 +175,17 @@ export function useHeroPointer(heroContainerRef, options = {}) {
 
     // Idle evaluation interval (every 80ms)
     const idleCheckInterval = setInterval(() => {
+      if (!enabled) return;
+
       const S = stateRef.current;
       const now = performance.now();
       const timeSinceMove = now - lastMoveTimeRef.current;
 
-      if (!S.isIdle && timeSinceMove >= idleThresholdMs && S.isOverHero) {
+      if (!S.isIdle && timeSinceMove >= idleThresholdMs && S.isOverHero && !S.snapTarget) {
         S.isIdle = true;
         S.idleStartTime = now;
         setPointerSnapshot(prev => ({ ...prev, isIdle: true }));
-      } else if (S.isIdle && timeSinceMove < idleThresholdMs) {
+      } else if (S.isIdle && (!S.isOverHero || timeSinceMove < idleThresholdMs)) {
         S.isIdle = false;
         setPointerSnapshot(prev => ({ ...prev, isIdle: false }));
       }
@@ -177,7 +202,7 @@ export function useHeroPointer(heroContainerRef, options = {}) {
       clearInterval(idleCheckInterval);
       if (touchHoldTimerRef.current) clearTimeout(touchHoldTimerRef.current);
     };
-  }, [handlePointerMove, handleClick, handleTouchStart, handleTouchEnd, idleThresholdMs]);
+  }, [handlePointerMove, handleClick, handleTouchStart, handleTouchEnd, idleThresholdMs, enabled]);
 
   return {
     stateRef,

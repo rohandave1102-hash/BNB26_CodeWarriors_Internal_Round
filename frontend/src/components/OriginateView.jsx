@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { PlusCircle, Upload, Sparkles, Key, CheckCircle, Download, Database, Shield } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { BorderGlow } from './cards';
 import { registerGenesis } from '../services/api';
 
 export default function OriginateView({ onRegistrationSuccess }) {
@@ -156,235 +157,238 @@ export default function OriginateView({ onRegistrationSuccess }) {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="glass-3d" style={{
-        padding: '32px',
-        borderRadius: 'var(--radius-lg)',
-        background: 'var(--bg-card)',
-        border: '1px solid var(--border-subtle)',
-        marginBottom: '32px'
-      }}>
-        {/* Upload Dropzone */}
-        <label className="dropzone-cyber" style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '36px 20px',
-          borderRadius: 'var(--radius-md)',
-          border: '2px dashed rgba(255, 255, 255, 0.15)',
-          background: 'rgba(3, 7, 18, 0.5)',
-          cursor: 'pointer',
-          marginBottom: '24px'
-        }}>
-          <input type="file" onChange={handleFileChange} style={{ display: 'none' }} accept="image/*,.pdf,.bin" />
-          {filePreview ? (
-            <div style={{ textAlign: 'center' }}>
-              <img src={filePreview} alt="Preview" style={{ maxHeight: '160px', borderRadius: '12px', marginBottom: '10px' }} />
-              <div style={{ color: '#fff', fontWeight: 600 }}>{file?.name}</div>
-            </div>
-          ) : (
-            <div style={{ textAlign: 'center' }}>
-              <Upload size={32} color="var(--neon-cyan)" style={{ marginBottom: '10px' }} />
-              <div style={{ color: '#fff', fontWeight: 700 }}>Click or drop file to originate</div>
-              <div style={{ color: 'var(--text-dim)', fontSize: '0.75rem' }}>Images, documents, or generative model outputs</div>
-            </div>
-          )}
-        </label>
-
-        {/* Inputs */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', marginBottom: '20px' }}>
-          <div>
-            <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-dim)', display: 'block', marginBottom: '6px' }}>
-              GENERATIVE AI MODEL
-            </label>
-            <input
-              type="text"
-              value={aiModel}
-              onChange={(e) => setAiModel(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                borderRadius: 'var(--radius-sm)',
-                background: 'rgba(3, 7, 18, 0.7)',
-                border: '1px solid var(--border-subtle)',
-                color: '#fff',
-                fontSize: '0.85rem'
-              }}
-              required
-            />
-          </div>
-
-          <div>
-            <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-dim)', display: 'block', marginBottom: '6px' }}>
-              APPLICATION / PIPELINE
-            </label>
-            <input
-              type="text"
-              value={applicationName}
-              onChange={(e) => setApplicationName(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                borderRadius: 'var(--radius-sm)',
-                background: 'rgba(3, 7, 18, 0.7)',
-                border: '1px solid var(--border-subtle)',
-                color: '#fff',
-                fontSize: '0.85rem'
-              }}
-              required
-            />
-          </div>
-        </div>
-
-        {/* Privacy Prompt Commitment */}
-        <div style={{
-          padding: '20px',
-          borderRadius: 'var(--radius-md)',
-          background: 'rgba(3, 7, 18, 0.4)',
-          border: '1px solid var(--border-subtle)',
-          marginBottom: '24px'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-            <Key size={16} color="var(--neon-emerald)" />
-            <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#fff' }}>
-              Privacy-Preserving Salted Prompt Commitment (Optional)
-            </span>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px' }}>
-            <input
-              type="text"
-              placeholder="Secret generation prompt"
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              style={{
-                padding: '12px 16px',
-                borderRadius: 'var(--radius-sm)',
-                background: 'rgba(3, 7, 18, 0.7)',
-                border: '1px solid var(--border-subtle)',
-                color: '#fff',
-                fontSize: '0.85rem'
-              }}
-            />
-            <input
-              type="text"
-              placeholder="Private salt (random hex string)"
-              value={salt}
-              onChange={(e) => setSalt(e.target.value)}
-              style={{
-                padding: '12px 16px',
-                borderRadius: 'var(--radius-sm)',
-                background: 'rgba(3, 7, 18, 0.7)',
-                border: '1px solid var(--border-subtle)',
-                color: 'var(--neon-emerald)',
-                fontFamily: 'var(--font-mono)',
-                fontSize: '0.85rem'
-              }}
-            />
-          </div>
-        </div>
-
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="btn-cyber"
-          style={{
-            width: '100%',
-            padding: '14px',
-            borderRadius: 'var(--radius-sm)',
-            background: 'linear-gradient(135deg, #06b6d4 0%, #10b981 100%)',
-            color: '#030712',
-            fontSize: '1rem',
-            fontWeight: 800,
-            border: 'none',
+      <BorderGlow
+        borderRadius={24}
+        glowRadius={40}
+        colors={['#00f0ff', '#10b981', '#7c3aed']}
+        glowColor="190 90% 55%"
+        style={{ marginBottom: '32px' }}
+      >
+        <form onSubmit={handleSubmit} style={{ padding: '32px' }}>
+          {/* Upload Dropzone */}
+          <label className="dropzone-cyber" style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '36px 20px',
+            borderRadius: 'var(--radius-md)',
+            border: '2px dashed rgba(255, 255, 255, 0.15)',
+            background: 'rgba(3, 7, 18, 0.6)',
             cursor: 'pointer',
-            boxShadow: '0 0 25px rgba(6, 182, 212, 0.4)'
-          }}
-        >
-          {isSubmitting ? 'Minting On-Chain & Generating C2PA...' : 'Originate Genesis Block (Anchor to EVM)'}
-        </button>
-      </form>
+            marginBottom: '24px'
+          }}>
+            <input type="file" onChange={handleFileChange} style={{ display: 'none' }} accept="image/*,.pdf,.bin" />
+            {filePreview ? (
+              <div style={{ textAlign: 'center' }}>
+                <img src={filePreview} alt="Preview" style={{ maxHeight: '160px', borderRadius: '12px', marginBottom: '10px', border: '1px solid var(--neon-cyan)', boxShadow: '0 0 20px rgba(0,240,255,0.3)' }} />
+                <div style={{ color: '#fff', fontWeight: 600 }}>{file?.name}</div>
+              </div>
+            ) : (
+              <div style={{ textAlign: 'center' }}>
+                <Upload size={32} color="var(--neon-cyan)" style={{ marginBottom: '10px' }} />
+                <div style={{ color: '#fff', fontWeight: 700 }}>Click or drop file to originate</div>
+                <div style={{ color: 'var(--text-dim)', fontSize: '0.75rem' }}>Images, documents, or generative model outputs</div>
+              </div>
+            )}
+          </label>
+
+          {/* Inputs */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', marginBottom: '20px' }}>
+            <div>
+              <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-dim)', display: 'block', marginBottom: '6px' }}>
+                GENERATIVE AI MODEL
+              </label>
+              <input
+                type="text"
+                value={aiModel}
+                onChange={(e) => setAiModel(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  borderRadius: 'var(--radius-sm)',
+                  background: 'rgba(3, 7, 18, 0.7)',
+                  border: '1px solid var(--border-subtle)',
+                  color: '#fff',
+                  fontSize: '0.85rem'
+                }}
+                required
+              />
+            </div>
+
+            <div>
+              <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-dim)', display: 'block', marginBottom: '6px' }}>
+                APPLICATION / PIPELINE
+              </label>
+              <input
+                type="text"
+                value={applicationName}
+                onChange={(e) => setApplicationName(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  borderRadius: 'var(--radius-sm)',
+                  background: 'rgba(3, 7, 18, 0.7)',
+                  border: '1px solid var(--border-subtle)',
+                  color: '#fff',
+                  fontSize: '0.85rem'
+                }}
+                required
+              />
+            </div>
+          </div>
+
+          {/* Privacy Prompt Commitment */}
+          <div style={{
+            padding: '20px',
+            borderRadius: 'var(--radius-md)',
+            background: 'rgba(3, 7, 18, 0.4)',
+            border: '1px solid var(--border-subtle)',
+            marginBottom: '24px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+              <Key size={16} color="var(--neon-emerald)" />
+              <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#fff' }}>
+                Privacy-Preserving Salted Prompt Commitment (Optional)
+              </span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px' }}>
+              <input
+                type="text"
+                placeholder="Secret generation prompt"
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                style={{
+                  padding: '12px 16px',
+                  borderRadius: 'var(--radius-sm)',
+                  background: 'rgba(3, 7, 18, 0.7)',
+                  border: '1px solid var(--border-subtle)',
+                  color: '#fff',
+                  fontSize: '0.85rem'
+                }}
+              />
+              <input
+                type="text"
+                placeholder="Private salt (random hex string)"
+                value={salt}
+                onChange={(e) => setSalt(e.target.value)}
+                style={{
+                  padding: '12px 16px',
+                  borderRadius: 'var(--radius-sm)',
+                  background: 'rgba(3, 7, 18, 0.7)',
+                  border: '1px solid var(--border-subtle)',
+                  color: 'var(--neon-emerald)',
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '0.85rem'
+                }}
+              />
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="btn-cyber"
+            style={{
+              width: '100%',
+              padding: '14px',
+              borderRadius: 'var(--radius-sm)',
+              background: 'linear-gradient(135deg, #06b6d4 0%, #10b981 100%)',
+              color: '#030712',
+              fontSize: '1rem',
+              fontWeight: 800,
+              border: 'none',
+              cursor: 'pointer',
+              boxShadow: '0 0 25px rgba(6, 182, 212, 0.4)'
+            }}
+          >
+            {isSubmitting ? 'Minting On-Chain & Generating C2PA...' : 'Originate Genesis Block (Anchor to EVM)'}
+          </button>
+        </form>
+      </BorderGlow>
 
       {/* Result Display */}
       {result && (
-        <div className="glass-3d" style={{
-          padding: '32px',
-          borderRadius: 'var(--radius-lg)',
-          background: 'var(--bg-card)',
-          border: '1px solid var(--neon-emerald)',
-          boxShadow: '0 0 35px var(--neon-emerald-glow)'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
-            <CheckCircle size={28} color="var(--neon-emerald)" />
-            <div>
-              <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#fff' }}>
-                Genesis Asset Successfully Anchored
-              </h3>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                Immutable On-Chain Verification Block Created
-              </div>
-            </div>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px', marginBottom: '20px' }}>
-            <div style={{ padding: '14px', borderRadius: 'var(--radius-sm)', background: 'rgba(3, 7, 18, 0.5)' }}>
-              <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)', fontWeight: 700 }}>SHA-256 DIGEST</div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', color: 'var(--neon-emerald)', wordBreak: 'break-all' }}>
-                {result.fileHash}
+        <BorderGlow
+          borderRadius={24}
+          glowRadius={42}
+          colors={['#10b981', '#00f0ff', '#7c3aed']}
+          glowColor="160 85% 60%"
+        >
+          <div style={{ padding: '32px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+              <CheckCircle size={28} color="var(--neon-emerald)" />
+              <div>
+                <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#fff' }}>
+                  Genesis Asset Successfully Anchored
+                </h3>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                  Immutable On-Chain Verification Block Created
+                </div>
               </div>
             </div>
 
-            <div style={{ padding: '14px', borderRadius: 'var(--radius-sm)', background: 'rgba(3, 7, 18, 0.5)' }}>
-              <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)', fontWeight: 700 }}>IPFS CID (CONTENT IDENTIFIER)</div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', color: 'var(--neon-cyan)', wordBreak: 'break-all' }}>
-                {result.ipfs?.cid}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px', marginBottom: '20px' }}>
+              <div style={{ padding: '14px', borderRadius: 'var(--radius-sm)', background: 'rgba(3, 7, 18, 0.5)' }}>
+                <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)', fontWeight: 700 }}>SHA-256 DIGEST</div>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', color: 'var(--neon-emerald)', wordBreak: 'break-all' }}>
+                  {result.fileHash}
+                </div>
+              </div>
+
+              <div style={{ padding: '14px', borderRadius: 'var(--radius-sm)', background: 'rgba(3, 7, 18, 0.5)' }}>
+                <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)', fontWeight: 700 }}>IPFS CID (CONTENT IDENTIFIER)</div>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', color: 'var(--neon-cyan)', wordBreak: 'break-all' }}>
+                  {result.ipfs?.cid}
+                </div>
               </div>
             </div>
-          </div>
 
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <button
-              onClick={() => downloadJson(result.c2paManifest, `C2PA_Manifest_${result.fileHash.slice(0, 8)}.json`)}
-              className="btn-cyber"
-              style={{
-                padding: '10px 18px',
-                borderRadius: 'var(--radius-sm)',
-                background: 'rgba(6, 182, 212, 0.15)',
-                border: '1px solid var(--neon-cyan)',
-                color: 'var(--neon-cyan)',
-                fontSize: '0.82rem',
-                fontWeight: 700,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                cursor: 'pointer'
-              }}
-            >
-              <Download size={14} />
-              <span>C2PA Manifest (JSON)</span>
-            </button>
+            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+              <button
+                onClick={() => downloadJson(result.c2paManifest, `C2PA_Manifest_${result.fileHash.slice(0, 8)}.json`)}
+                className="btn-cyber"
+                style={{
+                  padding: '10px 18px',
+                  borderRadius: 'var(--radius-sm)',
+                  background: 'rgba(6, 182, 212, 0.15)',
+                  border: '1px solid var(--neon-cyan)',
+                  color: 'var(--neon-cyan)',
+                  fontSize: '0.82rem',
+                  fontWeight: 700,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  cursor: 'pointer'
+                }}
+              >
+                <Download size={14} />
+                <span>C2PA Manifest (JSON)</span>
+              </button>
 
-            <button
-              onClick={() => downloadJson(result.provenancePassport, `Provenance_Passport_${result.fileHash.slice(0, 8)}.json`)}
-              className="btn-cyber"
-              style={{
-                padding: '10px 18px',
-                borderRadius: 'var(--radius-sm)',
-                background: 'rgba(16, 185, 129, 0.15)',
-                border: '1px solid var(--neon-emerald)',
-                color: 'var(--neon-emerald)',
-                fontSize: '0.82rem',
-                fontWeight: 700,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                cursor: 'pointer'
-              }}
-            >
-              <Download size={14} />
-              <span>W3C Verifiable Credential</span>
-            </button>
+              <button
+                onClick={() => downloadJson(result.provenancePassport, `Provenance_Passport_${result.fileHash.slice(0, 8)}.json`)}
+                className="btn-cyber"
+                style={{
+                  padding: '10px 18px',
+                  borderRadius: 'var(--radius-sm)',
+                  background: 'rgba(16, 185, 129, 0.15)',
+                  border: '1px solid var(--neon-emerald)',
+                  color: 'var(--neon-emerald)',
+                  fontSize: '0.82rem',
+                  fontWeight: 700,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  cursor: 'pointer'
+                }}
+              >
+                <Download size={14} />
+                <span>W3C Verifiable Credential</span>
+              </button>
+            </div>
           </div>
-        </div>
+        </BorderGlow>
       )}
     </div>
   );

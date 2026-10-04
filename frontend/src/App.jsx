@@ -50,8 +50,8 @@ export default function App() {
 
     const handleScroll = () => {
       const scrollY = window.scrollY || 0;
-      // Dims from 1.0 down to 0.35 smoothly as user scrolls past the hero
-      const factor = Math.max(0.35, 1 - (scrollY / 700) * 0.65);
+      // Dims from 1.0 down to 0.38 smoothly as user scrolls past the hero with slower, graceful curve
+      const factor = Math.max(0.38, 1 - (scrollY / 1300) * 0.62);
       setBgIntensity(factor);
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -72,9 +72,9 @@ export default function App() {
 
       {/* Layer 1: CGI Blockchain Background with Color-Shifting Cursor & Singularity */}
       <BlockchainBackground
-        intensity={bgIntensity}
+        intensity={activeTab === 'dashboard' ? bgIntensity : 0.22}
         palette="violet-core"
-        cursorEffects={true}
+        cursorEffects={activeTab === 'dashboard'}
       />
 
       {/* Layer 2: Fixed navbar */}

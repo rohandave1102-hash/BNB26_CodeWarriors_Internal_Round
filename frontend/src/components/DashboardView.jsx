@@ -151,17 +151,17 @@ export default function DashboardView({ stats, onNavigate, user }) {
           <div style={{
             fontFamily: 'var(--font-mono)',
             fontSize: '0.68rem',
-            color: 'rgba(0,240,255,0.3)',
-            letterSpacing: '0.06em',
-            animation: 'scan-across 12s linear infinite',
+            color: 'rgba(0,240,255,0.45)',
+            letterSpacing: '0.08em',
+            animation: 'scan-across 38s linear infinite',
             whiteSpace: 'nowrap',
             paddingLeft: '100%',
           }}>
-            BLOCK_HASH::{ticker}&nbsp;&nbsp;•&nbsp;&nbsp;
-            PROTOCOL::EVM_CHAIN&nbsp;&nbsp;•&nbsp;&nbsp;
-            C2PA::EMBEDDED&nbsp;&nbsp;•&nbsp;&nbsp;
-            IPFS::PINNED&nbsp;&nbsp;•&nbsp;&nbsp;
-            LSB_WATERMARK::3X_REDUNDANT
+            BLOCK_HASH::{ticker}&nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;&nbsp;
+            PROTOCOL::EVM_CHAIN_VALIDATED&nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;&nbsp;
+            C2PA::METADATA_HARD_BINDING&nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;&nbsp;
+            IPFS::CONTENT_ADDRESSABLE_CID&nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;&nbsp;
+            LSB_WATERMARK::3X_REDUNDANT_RESILIENCE
           </div>
         </div>
 
@@ -171,8 +171,8 @@ export default function DashboardView({ stats, onNavigate, user }) {
           style={{
             marginBottom: '24px',
             opacity: heroVisible ? 0.8 : 0,
-            transform: heroVisible ? 'translateY(0)' : 'translateY(20px)',
-            transition: 'opacity 0.6s ease 0.1s, transform 0.6s ease 0.1s',
+            transform: heroVisible ? 'translateY(0)' : 'translateY(24px)',
+            transition: 'opacity 1.1s cubic-bezier(0.16, 1, 0.3, 1) 0.15s, transform 1.1s cubic-bezier(0.16, 1, 0.3, 1) 0.15s',
           }}
         >
           ⬡ AI PROVENANCE PROTOCOL
@@ -186,8 +186,8 @@ export default function DashboardView({ stats, onNavigate, user }) {
             maxWidth: '900px',
             marginBottom: '28px',
             opacity: heroVisible ? 1 : 0,
-            transform: heroVisible ? 'translateY(0)' : 'translateY(30px)',
-            transition: 'opacity 0.7s ease 0.2s, transform 0.7s ease 0.2s',
+            transform: heroVisible ? 'translateY(0)' : 'translateY(36px)',
+            transition: 'opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.3s, transform 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.3s',
           }}
         >
           Trust the Machine.
@@ -204,8 +204,8 @@ export default function DashboardView({ stats, onNavigate, user }) {
             lineHeight: 1.7,
             marginBottom: '44px',
             opacity: heroVisible ? 1 : 0,
-            transform: heroVisible ? 'translateY(0)' : 'translateY(20px)',
-            transition: 'opacity 0.7s ease 0.35s, transform 0.7s ease 0.35s',
+            transform: heroVisible ? 'translateY(0)' : 'translateY(24px)',
+            transition: 'opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.5s, transform 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.5s',
           }}
         >
           Cryptographic provenance for AI-generated content. C2PA embedding,
@@ -217,8 +217,8 @@ export default function DashboardView({ stats, onNavigate, user }) {
           style={{
             display: 'flex', gap: '14px', flexWrap: 'wrap', justifyContent: 'center',
             opacity: heroVisible ? 1 : 0,
-            transform: heroVisible ? 'translateY(0)' : 'translateY(20px)',
-            transition: 'opacity 0.7s ease 0.5s, transform 0.7s ease 0.5s',
+            transform: heroVisible ? 'translateY(0)' : 'translateY(24px)',
+            transition: 'opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.7s, transform 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.7s',
           }}
         >
           <button
@@ -248,7 +248,8 @@ export default function DashboardView({ stats, onNavigate, user }) {
             display: 'flex', gap: '32px', flexWrap: 'wrap', justifyContent: 'center',
             marginTop: '60px',
             opacity: heroVisible ? 1 : 0,
-            transition: 'opacity 0.8s ease 0.7s',
+            transform: heroVisible ? 'translateY(0)' : 'translateY(20px)',
+            transition: 'opacity 1.3s cubic-bezier(0.16, 1, 0.3, 1) 0.9s, transform 1.3s cubic-bezier(0.16, 1, 0.3, 1) 0.9s',
           }}
         >
           {[
@@ -281,12 +282,13 @@ export default function DashboardView({ stats, onNavigate, user }) {
           style={{
             position: 'absolute', bottom: '36px', left: '50%', transform: 'translateX(-50%)',
             display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px',
-            opacity: heroVisible ? 0.5 : 0, transition: 'opacity 1s ease 1s',
-            animation: 'float 2.5s ease-in-out infinite',
+            opacity: heroVisible ? 0.6 : 0,
+            transition: 'opacity 1.4s ease 1.2s',
+            animation: 'float 3.2s ease-in-out infinite',
           }}
         >
-          <div style={{ fontSize: '0.65rem', fontFamily: 'var(--font-mono)', letterSpacing: '0.12em', color: 'var(--text-dim)', textTransform: 'uppercase' }}>Scroll</div>
-          <div style={{ width: '1px', height: '36px', background: 'linear-gradient(to bottom, rgba(0,240,255,0.4), transparent)' }} />
+          <div style={{ fontSize: '0.65rem', fontFamily: 'var(--font-mono)', letterSpacing: '0.14em', color: 'var(--neon-cyan)', textTransform: 'uppercase', opacity: 0.8 }}>Scroll to Explore</div>
+          <div style={{ width: '1px', height: '36px', background: 'linear-gradient(to bottom, var(--neon-cyan), transparent)' }} />
         </div>
       </section>
 
@@ -295,8 +297,8 @@ export default function DashboardView({ stats, onNavigate, user }) {
         ref={statsRef}
         style={{
           opacity: statsVisible ? 1 : 0,
-          transform: statsVisible ? 'translateY(0)' : 'translateY(30px)',
-          transition: 'opacity 0.7s ease, transform 0.7s ease',
+          transform: statsVisible ? 'translateY(0)' : 'translateY(40px)',
+          transition: 'opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.15s, transform 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.15s',
         }}
       >
         <BlockchainBentoSection stats={stats} onNavigate={onNavigate} />
@@ -409,17 +411,28 @@ export default function DashboardView({ stats, onNavigate, user }) {
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontFamily: 'var(--font-mono)', fontSize: '0.72rem', fontWeight: 700,
                   color: '#020208',
-                  boxShadow: '0 0 20px rgba(0,240,255,0.3)',
+                  boxShadow: '0 0 20px rgba(0,240,255,0.4)',
+                  animation: `glow-breathe ${2.6 + i * 0.4}s infinite ease-in-out`,
                   flexShrink: 0,
                 }}>
                   {step.num}
                 </div>
                 {i < PROTOCOL_STEPS.length - 1 && (
                   <div style={{
-                    width: '1px', flex: 1, minHeight: '40px',
-                    background: 'linear-gradient(to bottom, rgba(0,240,255,0.35), rgba(139,92,246,0.2))',
+                    width: '2px', flex: 1, minHeight: '44px',
+                    background: 'linear-gradient(to bottom, rgba(0,240,255,0.45), rgba(139,92,246,0.25))',
                     margin: '6px 0',
-                  }} />
+                    position: 'relative',
+                    overflow: 'hidden',
+                  }}>
+                    <div style={{
+                      position: 'absolute',
+                      left: 0, right: 0,
+                      height: '24px',
+                      background: 'linear-gradient(to bottom, transparent, #ffffff, transparent)',
+                      animation: `pulse-line 6.5s infinite linear ${i * 1.1}s`,
+                    }} />
+                  </div>
                 )}
               </div>
               {/* Content */}

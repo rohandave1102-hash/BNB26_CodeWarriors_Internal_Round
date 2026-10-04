@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import { useHeroPointer } from '../hooks/useHeroPointer';
 import {
   PALETTES,
@@ -13,26 +13,18 @@ import {
 /**
  * BlockchainBackground — CGI-Grade Cinematic Blockchain Canvas & Cursor Engine
  * 
- * 8 Visual Layers in a Single Cohesive RAF Loop:
- * 1. Deep Space Base (Aurora / Nebula Mesh)
- * 2. Perspective Grid Floor (Receding lines with Horizon Glow)
- * 3. Parallax Hash Rain (Multi-depth hex streams)
- * 4. Blockchain Constellation (Linked blocks with live mining-in events)
- * 5. Proof-of-Work Moment (Resolves into leading zeros 0000...a3f9)
- * 6. Validator Node Network with traveling tx data packets
- * 7. Breathing Merkle Tree Constellation
- * 8. Ambient Volumetric Vignette with headline calm zone
- * 
- * Cursor System (Hero Only):
- * - Color-shifting particle ribbon trail based on position, speed, and time
- * - Dark-matter singularity after 0.6s idle with gravitational lensing & accretion ring
- * - Shockwave burst on movement and palette cycling on click
+ * Dynamic Animations:
+ * - Fluid undulating constellation nodes with pulsing halos
+ * - Shimmering, breathing electric connecting lines with energy currents
+ * - Forward-streaming 3D perspective grid floor with continuous motion
+ * - High-speed transaction packets traveling along consensus edges
+ * - Floating, rotating blockchain constellation blocks with flowing dash vectors
+ * - Sweeping telemetry radar wave across the network
  */
 export default function BlockchainBackground({
   intensity = 1,
-  palette: initialPalette = 'violet-core',
+  palette = 'violet-core',
   cursorEffects = true,
-  chainEvents,
   chainMood = 'idle',
   density = 'auto',
   reducedMotion = false,
@@ -42,21 +34,19 @@ export default function BlockchainBackground({
   const containerRef = useRef(null);
   const animRef = useRef(null);
 
-  // Active palette with smooth cross-fade
-  const [currentPaletteKey, setCurrentPaletteKey] = useState(initialPalette);
-  const targetPaletteKeyRef = useRef(initialPalette);
+  const activePaletteKeyRef = useRef(palette);
+  const targetPaletteKeyRef = useRef(palette);
   const paletteTransitionRef = useRef({ progress: 1, duration: 600, startTime: 0 });
 
-  // Hero pointer intelligence
-  const { stateRef: pointerRef } = useHeroPointer(heroContainerRef || containerRef);
+  const { stateRef: pointerRef } = useHeroPointer(heroContainerRef || containerRef, {
+    enabled: cursorEffects && intensity > 0.4,
+  });
 
-  // Check reduced motion
   const isReducedMotion = reducedMotion || (
     typeof window !== 'undefined' &&
     window.matchMedia('(prefers-reduced-motion: reduce)').matches
   );
 
-  // Cycle palette on user click
   const cyclePalette = useCallback(() => {
     const currentIdx = PALETTE_ORDER.indexOf(targetPaletteKeyRef.current);
     const nextIdx = (currentIdx + 1) % PALETTE_ORDER.length;
@@ -64,13 +54,13 @@ export default function BlockchainBackground({
     targetPaletteKeyRef.current = nextKey;
     paletteTransitionRef.current = {
       progress: 0,
-      duration: 600,
+      duration: 500,
       startTime: performance.now(),
-      fromKey: currentPaletteKey,
+      fromKey: activePaletteKeyRef.current,
       toKey: nextKey,
     };
-    setCurrentPaletteKey(nextKey);
-  }, [currentPaletteKey]);
+    activePaletteKeyRef.current = nextKey;
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -85,137 +75,144 @@ export default function BlockchainBackground({
     const resize = () => {
       width = window.innerWidth;
       height = window.innerHeight;
-      canvas.width = width * dpr;
-      canvas.height = height * dpr;
+      canvas.width = Math.floor(width * dpr);
+      canvas.height = Math.floor(height * dpr);
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      ctx.setTransform(1, 0, 0, 1, 0, 0); // Deterministic matrix reset
       ctx.scale(dpr, dpr);
     };
     resize();
     window.addEventListener('resize', resize);
 
-    // ── Density Budget Configuration ──
+    // ── Density Configuration ──
     const isMobile = width < 768;
     const isLowDensity = density === 'low' || (density === 'auto' && isMobile);
-    const PARTICLE_TRAIL_CAP = isLowDensity ? 40 : 110;
-    const RAIN_COLUMNS = Math.floor(width / (isLowDensity ? 48 : 28));
-    const NODE_COUNT = isLowDensity ? 24 : 45;
+    const PARTICLE_TRAIL_CAP = isLowDensity ? 30 : 70;
+    const RAIN_COLUMNS = Math.floor(width / (isLowDensity ? 48 : 30));
+    const NODE_COUNT = isLowDensity ? 36 : 70;
 
-    // ── State Objects ──
+    // ── Animation Variables ──
     let time = 0;
     let lastTime = performance.now();
     let currentCursorColor = { h: 270, s: 85, l: 65, a: 1 };
-
-    // Shockwaves (from clicks or mined blocks)
-    const shockwaves = [];
-
-    // Cursor particle ribbon trail
+    let smoothScrollY = 0;
     const cursorParticles = [];
+    const ripples = [];
 
     // Singularity orbiters
-    const orbiters = Array.from({ length: 18 }, (_, i) => ({
-      angle: (i / 18) * Math.PI * 2,
-      radius: Math.random() * 38 + 18,
-      speed: Math.random() * 0.05 + 0.03,
+    const orbiters = Array.from({ length: 14 }, (_, i) => ({
+      angle: (i / 14) * Math.PI * 2,
+      radius: Math.random() * 28 + 14,
+      speed: Math.random() * 0.02 + 0.01,
       size: Math.random() * 2 + 1,
       char: '0123456789abcdef'[Math.floor(Math.random() * 16)],
     }));
 
-    // Singularity transition state
-    let singularityStrength = 0; // 0 (hidden) to 1 (full void)
+    let singularityStrength = 0;
 
-    // ── Layer 3: Hash Rain Columns ──
+    // ── Hash Rain with parallax (gentle fall) ──
     const hashChars = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', '⬡', '0x', 'µ', 'λ'];
     const hashRain = Array.from({ length: RAIN_COLUMNS }, (_, i) => ({
       x: i * (width / RAIN_COLUMNS) + Math.random() * 10,
-      y: Math.random() * -height * 1.5,
-      speed: Math.random() * 0.6 + 0.3,
-      depth: Math.random(), // 0 = far (blurred), 1 = near (sharp)
+      y: Math.random() * -height * 1.4,
+      speed: Math.random() * 0.16 + 0.08,
+      depth: Math.random(),
       char: hashChars[Math.floor(Math.random() * hashChars.length)],
-      length: Math.floor(Math.random() * 5 + 3),
-      changeRate: Math.floor(Math.random() * 30 + 15),
+      changeRate: Math.floor(Math.random() * 50 + 25),
       changeCounter: 0,
     }));
 
-    // ── Layer 4: Blockchain Constellation ──
+    // ── Blockchain Constellation Blocks ──
     const chainBlocks = [
-      { x: width * 0.72, y: height * 0.28, rot: 0, size: 28, hash: '0x9f3a…c1', pulse: 0, minedIn: true },
-      { x: width * 0.80, y: height * 0.38, rot: 0.4, size: 32, hash: '0x4e2b…84', pulse: 0, minedIn: true },
-      { x: width * 0.74, y: height * 0.50, rot: 0.8, size: 30, hash: '0x17c9…a0', pulse: 0, minedIn: true },
-      { x: width * 0.86, y: height * 0.62, rot: 1.2, size: 34, hash: '0x62da…f5', pulse: 0, minedIn: true },
+      { x: width * 0.74, y: height * 0.22, rot: 0, size: 28, hash: '0x9f3a…c1', pulse: 0 },
+      { x: width * 0.83, y: height * 0.35, rot: 0.4, size: 30, hash: '0x4e2b…84', pulse: 0 },
+      { x: width * 0.76, y: height * 0.48, rot: 0.8, size: 28, hash: '0x17c9…a0', pulse: 0 },
+      { x: width * 0.86, y: height * 0.62, rot: 1.2, size: 32, hash: '0x62da…f5', pulse: 0 },
     ];
-    let nextMineTime = performance.now() + 6000;
-    let newlyMinedBlock = null;
+    let nextMineTime = performance.now() + 8000;
 
-    // ── Layer 5: Proof-of-Work Scrambler ──
-    let powState = {
-      active: true,
-      x: width * 0.16,
+    // ── Proof-of-Work Scrambler ──
+    const powState = {
+      x: width * 0.12,
       y: height * 0.42,
       hash: 'd8f49a2c',
       target: '0000a3f9',
-      stage: 'scrambling', // 'scrambling' -> 'resolved' -> 'pause'
+      stage: 'scrambling',
       timer: 0,
     };
 
-    // ── Layer 6: Node Network & Traveling Packets ──
-    const nodes = Array.from({ length: NODE_COUNT }, () => ({
-      x: Math.random() * width,
-      y: Math.random() * height * 0.85,
-      vx: (Math.random() - 0.5) * 0.18,
-      vy: (Math.random() - 0.5) * 0.18,
-      r: Math.random() * 1.5 + 0.8,
-    }));
+    // ── Animated Node Network (Continuous Velocity & Relaxed Organic Flight) ──
+    const nodes = Array.from({ length: NODE_COUNT }, (_, idx) => {
+      const angle = Math.random() * Math.PI * 2;
+      // Gentle, calm velocity: 0.14 to 0.32 px/frame
+      const speed = 0.14 + Math.random() * 0.18;
+      const isValidator = idx % 6 === 0; // ~17% are validator beacon nodes
+      const hueType = idx % 4; // Variety of hues
+      return {
+        x: Math.random() * width,
+        y: Math.random() * height,
+        speed,
+        angle,
+        turnSpeed: (Math.random() - 0.5) * 0.008, // Slow organic curving
+        phase: Math.random() * Math.PI * 2,
+        r: isValidator ? 3.6 : (Math.random() * 1.5 + 2.0),
+        isValidator,
+        hueType,
+        sonarRadius: isValidator ? Math.random() * 45 : 0,
+        energyFlash: 0,
+      };
+    });
 
-    const packets = Array.from({ length: 8 }, () => ({
-      fromIdx: 0,
-      toIdx: 1,
+    // Transaction photon packets traveling leisurely along constellation paths
+    const PACKET_COUNT = isLowDensity ? 8 : 16;
+    const packets = Array.from({ length: PACKET_COUNT }, () => ({
+      from: Math.floor(Math.random() * NODE_COUNT),
+      to: Math.floor(Math.random() * NODE_COUNT),
       progress: Math.random(),
-      speed: Math.random() * 0.009 + 0.004,
+      speed: 0.0022 + Math.random() * 0.0032,
+      hue: Math.random() > 0.5 ? 185 : 280, // Cyan or Purple
     }));
 
-    // ── Layer 7: Merkle Tree Nodes (Subtle Background Geometry) ──
+    // ── Merkle Tree Nodes ──
     const merkleNodes = [
-      { x: width * 0.22, y: height * 0.72, level: 0 },
-      { x: width * 0.18, y: height * 0.78, level: 1 },
-      { x: width * 0.26, y: height * 0.78, level: 1 },
-      { x: width * 0.16, y: height * 0.84, level: 2 },
-      { x: width * 0.20, y: height * 0.84, level: 2 },
-      { x: width * 0.24, y: height * 0.84, level: 2 },
-      { x: width * 0.28, y: height * 0.84, level: 2 },
+      { x: width * 0.20, y: height * 0.70, level: 0 },
+      { x: width * 0.16, y: height * 0.77, level: 1 },
+      { x: width * 0.24, y: height * 0.77, level: 1 },
+      { x: width * 0.14, y: height * 0.84, level: 2 },
+      { x: width * 0.18, y: height * 0.84, level: 2 },
+      { x: width * 0.22, y: height * 0.84, level: 2 },
+      { x: width * 0.26, y: height * 0.84, level: 2 },
     ];
 
     let lastClickHandled = null;
 
     // ════════════════════════════════════════════════════════════════════
-    // MAIN RENDER LOOP (Single Canvas, Single RAF Loop)
+    // MAIN RENDER LOOP
     // ════════════════════════════════════════════════════════════════════
     const render = (now) => {
       const dt = Math.min(32, now - lastTime);
       lastTime = now;
-      time += 0.016;
+      time += 0.007; // Leisurely and calm global clock (reduced from 0.018)
+
+      // Smooth, gentle scroll dampening so scrolling doesn't whip or rush the background
+      const targetScrollY = typeof window !== 'undefined' ? (window.scrollY || 0) : 0;
+      smoothScrollY += (targetScrollY - smoothScrollY) * 0.04;
 
       const P = pointerRef.current;
 
-      // Handle user click palette cycle & shockwave trigger
-      if (P.lastClick && P.lastClick !== lastClickHandled) {
+      // Handle gentle background click without flashing or re-rendering
+      if (P.lastClick && P.lastClick !== lastClickHandled && P.isOverHero) {
         lastClickHandled = P.lastClick;
         cyclePalette();
-        shockwaves.push({
+        ripples.push({
           x: P.lastClick.x,
           y: P.lastClick.y,
-          radius: 10,
-          maxRadius: Math.max(width, height) * 0.65,
+          radius: 8,
+          maxRadius: 190,
           color: currentCursorColor,
-          alpha: 0.65,
+          alpha: 0.5,
         });
-      }
-
-      // ── Palette Cross-Fade Calculation ──
-      const trans = paletteTransitionRef.current;
-      let activePalette = PALETTES[targetPaletteKeyRef.current] || PALETTES['violet-core'];
-
-      if (trans.progress < 1) {
-        const elapsed = now - trans.startTime;
-        trans.progress = Math.min(1, elapsed / trans.duration);
       }
 
       // Smooth color computation for cursor
@@ -226,32 +223,32 @@ export default function BlockchainBackground({
         time,
         targetPaletteKeyRef.current
       );
-      // Magnetic snapping color adoption
       const targetColor = P.snapColor
-        ? { h: 190, s: 95, l: 65, a: 1 } // snapped accent
+        ? { h: 190, s: 95, l: 65, a: 1 }
         : applyChainMood(rawCursorColor, chainMood);
 
       currentCursorColor = lerpColor(currentCursorColor, targetColor, 0.14);
 
-      // Scroll-driven intensity fade (dims, slows, desaturates when scrolled down)
+      // Scroll-driven intensity fade
       const currentIntensity = Math.max(0.18, Math.min(1, intensity));
+      const activePalette = PALETTES[targetPaletteKeyRef.current] || PALETTES['violet-core'];
 
       // ── Layer 1: Deep Space Base & Nebula Meshes ──
       ctx.fillStyle = activePalette.fogColor || '#030209';
       ctx.fillRect(0, 0, width, height);
 
-      // Color-shifting Aurora Orbs
+      // Fluid drifting aurora meshes
       const auroraCenters = [
-        { x: width * 0.18, y: height * 0.25, r: width * 0.45, h: activePalette.primaryHue },
-        { x: width * 0.82, y: height * 0.30, r: width * 0.50, h: activePalette.secondaryHue },
-        { x: width * 0.50, y: height * 0.85, r: width * 0.40, h: activePalette.tertiaryHue },
+        { x: width * 0.18 + Math.sin(time * 0.4) * 35, y: height * 0.22 + Math.cos(time * 0.3) * 25, r: width * 0.44, h: activePalette.primaryHue },
+        { x: width * 0.82 + Math.cos(time * 0.35) * 40, y: height * 0.28 + Math.sin(time * 0.4) * 30, r: width * 0.48, h: activePalette.secondaryHue },
+        { x: width * 0.50 + Math.sin(time * 0.5) * 30, y: height * 0.85, r: width * 0.40, h: activePalette.tertiaryHue },
       ];
 
       auroraCenters.forEach((c) => {
         const grd = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, c.r);
-        const shiftHue = (c.h + Math.sin(time * 0.2) * 20) % 360;
-        grd.addColorStop(0, `hsla(${shiftHue}, 75%, 10%, ${0.28 * currentIntensity})`);
-        grd.addColorStop(0.6, `hsla(${(shiftHue + 30) % 360}, 65%, 6%, ${0.12 * currentIntensity})`);
+        const shiftHue = (c.h + Math.sin(time * 0.25) * 20) % 360;
+        grd.addColorStop(0, `hsla(${shiftHue}, 80%, 9%, ${0.24 * currentIntensity})`);
+        grd.addColorStop(0.6, `hsla(${(shiftHue + 25) % 360}, 70%, 6%, ${0.10 * currentIntensity})`);
         grd.addColorStop(1, 'transparent');
         ctx.fillStyle = grd;
         ctx.beginPath();
@@ -259,12 +256,12 @@ export default function BlockchainBackground({
         ctx.fill();
       });
 
-      // Cursor Atmospheric Backing Color Field (follows cursor and tints local nebula)
-      if (P.isOverHero && cursorEffects) {
-        const cursorGlowR = 260;
+      // Cursor atmospheric ambient glow (hero only)
+      if (P.isOverHero && cursorEffects && currentIntensity > 0.4) {
+        const cursorGlowR = 240;
         const cursorGrd = ctx.createRadialGradient(P.x, P.y, 0, P.x, P.y, cursorGlowR);
-        cursorGrd.addColorStop(0, toHslaString(currentCursorColor, 0.12 * currentIntensity));
-        cursorGrd.addColorStop(0.5, toHslaString(currentCursorColor, 0.04 * currentIntensity));
+        cursorGrd.addColorStop(0, toHslaString(currentCursorColor, 0.09 * currentIntensity));
+        cursorGrd.addColorStop(0.6, toHslaString(currentCursorColor, 0.02 * currentIntensity));
         cursorGrd.addColorStop(1, 'transparent');
         ctx.fillStyle = cursorGrd;
         ctx.beginPath();
@@ -272,58 +269,51 @@ export default function BlockchainBackground({
         ctx.fill();
       }
 
-      // ── Layer 2: Perspective Grid Floor ──
-      const horizonY = height * 0.65;
-      const fov = 320;
+      // ── Layer 2: ANIMATED 3D Perspective Grid Floor (Streaming Forward Gently) ──
+      const horizonY = height * 0.64 - (smoothScrollY * 0.03);
       ctx.save();
       ctx.lineWidth = 0.6;
       ctx.strokeStyle = activePalette.gridColor;
 
-      // Vanishing point perspective lines
+      // Longitudinal lines receding to vanishing point
       const vpX = width * 0.5;
-      const gridCols = 16;
+      const gridCols = 15;
       for (let i = -gridCols; i <= gridCols; i++) {
-        const bottomX = vpX + (i * width * 0.1);
+        const bottomX = vpX + (i * width * 0.105);
         ctx.beginPath();
         ctx.moveTo(vpX, horizonY);
-
-        // Gentle cursor grid distortion
-        if (P.isOverHero && P.y > horizonY) {
-          const dx = bottomX - P.x;
-          const dy = height - P.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          const warp = Math.max(0, 1 - dist / 220) * 16 * (singularityStrength > 0.5 ? -1 : 1);
-          ctx.lineTo(bottomX + (dx > 0 ? warp : -warp), height);
-        } else {
-          ctx.lineTo(bottomX, height);
-        }
+        ctx.lineTo(bottomX, height);
         ctx.stroke();
       }
 
-      // Horizontal depth lines
-      for (let z = 1; z <= 8; z++) {
-        const lineY = horizonY + Math.pow(z / 8, 2.2) * (height - horizonY);
+      // ANIMATION EFFECT: Smooth, deeply leisurely forward-scrolling horizontal grid lines
+      const gridScroll = (time * 0.022 + smoothScrollY * 0.00008) % 1; // Ultra-relaxed cinematic forward travel
+      for (let z = 0; z <= 8; z++) {
+        const progress = (z + gridScroll) / 8;
+        const lineY = horizonY + Math.pow(progress, 2.4) * (height - horizonY);
+        const alpha = Math.min(1, Math.pow(progress, 1.3)) * 0.24 * currentIntensity;
         ctx.beginPath();
         ctx.moveTo(0, lineY);
         ctx.lineTo(width, lineY);
+        ctx.strokeStyle = `hsla(${activePalette.primaryHue}, 75%, 55%, ${alpha})`;
         ctx.stroke();
       }
       ctx.restore();
 
       // Horizon glow bar
-      const horizGrd = ctx.createLinearGradient(0, horizonY - 40, 0, horizonY + 40);
+      const horizGrd = ctx.createLinearGradient(0, horizonY - 35, 0, horizonY + 35);
       horizGrd.addColorStop(0, 'transparent');
       horizGrd.addColorStop(0.5, activePalette.horizonGlow);
       horizGrd.addColorStop(1, 'transparent');
       ctx.fillStyle = horizGrd;
-      ctx.fillRect(0, horizonY - 40, width, 80);
+      ctx.fillRect(0, horizonY - 35, width, 70);
 
-      // ── Layer 3: Parallax Hash Rain ──
-      ctx.font = '10px "JetBrains Mono", monospace';
+      // ── Layer 3: Streaming Hash Rain ──
+      ctx.font = '9px "JetBrains Mono", monospace';
       hashRain.forEach((stream) => {
-        stream.y += stream.speed * (0.4 + stream.depth * 0.8) * currentIntensity;
-        if (stream.y > height + 40) {
-          stream.y = -30;
+        stream.y += stream.speed * (0.4 + stream.depth * 0.7) * currentIntensity;
+        if (stream.y > height + 30) {
+          stream.y = -20;
           stream.x = Math.random() * width;
         }
 
@@ -333,32 +323,15 @@ export default function BlockchainBackground({
           stream.changeCounter = 0;
         }
 
-        // Parallax depth blur and opacity
-        const alpha = (0.04 + stream.depth * 0.12) * currentIntensity;
-        const fontSize = Math.floor(8 + stream.depth * 4);
-        ctx.font = `${fontSize}px "JetBrains Mono", monospace`;
-
-        // Near cursor interaction: deflect slightly
-        let drawX = stream.x;
-        if (P.isOverHero) {
-          const dx = stream.x - P.x;
-          const dy = stream.y - P.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 120) {
-            const push = (1 - dist / 120) * 18 * (singularityStrength > 0.5 ? -1.5 : 1);
-            drawX += dx > 0 ? push : -push;
-          }
-        }
-
+        const alpha = (0.04 + stream.depth * 0.10) * currentIntensity;
         ctx.fillStyle = toHslaString(currentCursorColor, alpha);
-        ctx.fillText(stream.char, drawX, stream.y);
+        ctx.fillText(stream.char, stream.x, stream.y);
       });
 
       // ── Layer 7: Breathing Merkle Tree ──
       ctx.save();
       const treePulse = Math.sin(time * 1.5) * 0.5 + 0.5;
       merkleNodes.forEach((node, i) => {
-        // Draw parent edge if not root
         if (node.level > 0) {
           const parentIdx = node.level === 1 ? 0 : (i <= 4 ? 1 : 2);
           const parent = merkleNodes[parentIdx];
@@ -366,173 +339,296 @@ export default function BlockchainBackground({
             ctx.beginPath();
             ctx.moveTo(node.x, node.y);
             ctx.lineTo(parent.x, parent.y);
-            ctx.strokeStyle = `hsla(${activePalette.accentHue}, 60%, 45%, ${0.05 + treePulse * 0.05})`;
+            ctx.strokeStyle = `hsla(${activePalette.accentHue}, 65%, 50%, ${0.05 + treePulse * 0.06})`;
             ctx.lineWidth = 0.8;
             ctx.stroke();
           }
         }
 
-        // Node circle
         ctx.beginPath();
-        ctx.arc(node.x, node.y, 2.5, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${activePalette.accentHue}, 70%, 55%, ${0.15 + treePulse * 0.15})`;
+        ctx.arc(node.x, node.y, 2.2, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${activePalette.accentHue}, 75%, 60%, ${0.15 + treePulse * 0.18})`;
         ctx.fill();
       });
       ctx.restore();
 
-      // ── Layer 6: Node Network with Traveling Data Packets ──
-      const activeConnections = [];
-      const connectDist = 130;
+      // ── Layer 6: HIGH-ENERGY ANIMATED NODE NETWORK & STREAMING CIRCUITS ──
+      const connectDist = isMobile ? 120 : 170;
+      const neighborMap = Array.from({ length: nodes.length }, () => []);
 
+      // 1. Fluid physics & organic drift movement
+      nodes.forEach((n) => {
+        n.angle += n.turnSpeed;
+        n.x += Math.cos(n.angle) * n.speed * currentIntensity;
+        n.y += Math.sin(n.angle) * n.speed * currentIntensity;
+
+        // Interactive elastic mouse repulsion when moving over hero
+        if (P.isOverHero && cursorEffects && currentIntensity > 0.4) {
+          const dx = n.x - P.x;
+          const dy = n.y - P.y;
+          const distCursor = Math.hypot(dx, dy);
+          if (distCursor < 160 && distCursor > 1) {
+            const force = (1 - distCursor / 160) * 1.6;
+            n.x += (dx / distCursor) * force;
+            n.y += (dy / distCursor) * force;
+          }
+        }
+
+        // Seamless boundary wrap with padding
+        if (n.x < -30) n.x = width + 30;
+        if (n.x > width + 30) n.x = -30;
+        if (n.y < -30) n.y = height + 30;
+        if (n.y > height + 30) n.y = -30;
+      });
+
+      // 2. Draw connecting lines with dynamic laser currents & flowing dashed energy
       for (let i = 0; i < nodes.length; i++) {
         const a = nodes[i];
         for (let j = i + 1; j < nodes.length; j++) {
           const b = nodes[j];
           const dx = a.x - b.x;
           const dy = a.y - b.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
+          const dist = Math.hypot(dx, dy);
+
           if (dist < connectDist) {
-            const alpha = (1 - dist / connectDist) * 0.09 * currentIntensity;
+            neighborMap[i].push(j);
+            neighborMap[j].push(i);
+
+            const normDist = 1 - dist / connectDist;
+            const wavePulse = Math.sin(time * 0.9 + (a.x + b.y) * 0.012) * 0.5 + 0.5;
+
+            // Subtle base network grid line
             ctx.beginPath();
             ctx.moveTo(a.x, a.y);
             ctx.lineTo(b.x, b.y);
-            ctx.strokeStyle = `hsla(${activePalette.primaryHue}, 70%, 45%, ${alpha})`;
-            ctx.lineWidth = 0.7;
+            ctx.strokeStyle = `hsla(${activePalette.primaryHue}, 80%, 55%, ${(0.04 + 0.12 * normDist) * currentIntensity})`;
+            ctx.lineWidth = 0.8;
             ctx.stroke();
-            activeConnections.push({ a, b });
+
+            // ANIMATION EFFECT 1: Flowing electric dashed energy currents streaming along lines (relaxed drift)
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            const lineHue = (activePalette.primaryHue + (i % 2 === 0 ? 0 : 35)) % 360;
+            ctx.strokeStyle = `hsla(${lineHue}, 90%, 65%, ${(0.10 + 0.22 * normDist + 0.10 * wavePulse) * currentIntensity})`;
+            ctx.lineWidth = 0.9;
+            ctx.setLineDash([4, 14]);
+            ctx.lineDashOffset = -time * 5 - (i + j) * 1.5; // Stately, calm streaming motion
+            ctx.stroke();
+            ctx.restore();
+
+            // ANIMATION EFFECT 2: High-voltage plasma bridge when nodes draw close
+            if (dist < connectDist * 0.38) {
+              ctx.beginPath();
+              ctx.moveTo(a.x, a.y);
+              ctx.lineTo(b.x, b.y);
+              ctx.strokeStyle = `hsla(${activePalette.tertiaryHue}, 100%, 72%, ${(0.22 + 0.25 * wavePulse) * currentIntensity})`;
+              ctx.lineWidth = 1.3;
+              ctx.stroke();
+            }
           }
         }
       }
 
-      // Drift nodes
+      // 3. Draw pulsing animated nodes (dots) with radiant glowing halos & sonar rings
       nodes.forEach((n) => {
-        n.x += n.vx * currentIntensity;
-        n.y += n.vy * currentIntensity;
-        if (n.x < 0) n.x = width;
-        if (n.x > width) n.x = 0;
-        if (n.y < 0) n.y = height;
-        if (n.y > height) n.y = 0;
+        if (n.energyFlash > 0) n.energyFlash *= 0.94;
+        const pulse = Math.sin(time * 1.1 + n.phase) * 0.22 + 1.0;
+        const dynamicR = (n.r + n.energyFlash * 2.2) * pulse;
 
+        let dotHue = activePalette.primaryHue;
+        if (n.hueType === 1) dotHue = activePalette.secondaryHue;
+        if (n.hueType === 2) dotHue = activePalette.tertiaryHue;
+        if (n.hueType === 3) dotHue = activePalette.accentHue;
+
+        // ANIMATION EFFECT 3: Validator Sonar Ripples
+        if (n.isValidator) {
+          n.sonarRadius += 0.15;
+          if (n.sonarRadius > 50) n.sonarRadius = 4;
+          const ringAlpha = (1 - n.sonarRadius / 50) * 0.42 * currentIntensity;
+          ctx.beginPath();
+          ctx.arc(n.x, n.y, n.sonarRadius, 0, Math.PI * 2);
+          ctx.strokeStyle = `hsla(${dotHue}, 90%, 65%, ${ringAlpha})`;
+          ctx.lineWidth = 1.1;
+          ctx.stroke();
+        }
+
+        // ANIMATION EFFECT 4: Radiant outer glowing halo
+        const auraR = dynamicR * 3.6;
+        const auraGrd = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, auraR);
+        auraGrd.addColorStop(0, `hsla(${dotHue}, 85%, 65%, ${(0.32 + n.energyFlash * 0.4) * currentIntensity})`);
+        auraGrd.addColorStop(0.5, `hsla(${dotHue}, 80%, 55%, ${(0.08 + n.energyFlash * 0.15) * currentIntensity})`);
+        auraGrd.addColorStop(1, 'transparent');
+        ctx.fillStyle = auraGrd;
         ctx.beginPath();
-        ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${activePalette.primaryHue}, 75%, 55%, ${0.25 * currentIntensity})`;
+        ctx.arc(n.x, n.y, auraR, 0, Math.PI * 2);
+        ctx.fill();
+
+        // ANIMATION EFFECT 5: Sharp energetic core dot
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, dynamicR, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${dotHue}, 95%, 85%, ${(0.75 + n.energyFlash * 0.25) * currentIntensity})`;
         ctx.fill();
       });
 
-      // Data packets along edges
-      if (activeConnections.length > 4) {
-        packets.forEach((p) => {
-          p.progress += p.speed * currentIntensity;
-          if (p.progress >= 1 || p.connIdx >= activeConnections.length) {
-            p.progress = 0;
-            p.connIdx = Math.floor(Math.random() * activeConnections.length);
+      // 4. ANIMATION EFFECT 6: High-speed transaction photon packets traveling along constellation paths
+      packets.forEach((p) => {
+        const nodeA = nodes[p.from];
+        const nodeB = nodes[p.to];
+        if (!nodeA || !nodeB) return;
+
+        p.progress += p.speed * currentIntensity;
+        if (p.progress >= 1) {
+          p.progress = 0;
+          p.from = p.to;
+          const neighbors = neighborMap[p.from];
+          if (neighbors && neighbors.length > 0) {
+            p.to = neighbors[Math.floor(Math.random() * neighbors.length)];
+          } else {
+            p.to = Math.floor(Math.random() * nodes.length);
           }
-          const conn = activeConnections[p.connIdx];
-          if (conn) {
-            const px = conn.a.x + (conn.b.x - conn.a.x) * p.progress;
-            const py = conn.a.y + (conn.b.y - conn.a.y) * p.progress;
-            ctx.beginPath();
-            ctx.arc(px, py, 1.8, 0, Math.PI * 2);
-            ctx.fillStyle = toHslaString(currentCursorColor, 0.75 * currentIntensity);
-            ctx.fill();
-          }
+          if (nodes[p.to]) nodes[p.to].energyFlash = 1.0;
+          return;
+        }
+
+        const headX = nodeA.x + (nodeB.x - nodeA.x) * p.progress;
+        const headY = nodeA.y + (nodeB.y - nodeA.y) * p.progress;
+        const tailProgress = Math.max(0, p.progress - 0.22);
+        const tailX = nodeA.x + (nodeB.x - nodeA.x) * tailProgress;
+        const tailY = nodeA.y + (nodeB.y - nodeA.y) * tailProgress;
+
+        // Glowing comet tail
+        const tailGrd = ctx.createLinearGradient(tailX, tailY, headX, headY);
+        tailGrd.addColorStop(0, 'transparent');
+        tailGrd.addColorStop(1, `hsla(${p.hue}, 100%, 75%, ${0.9 * currentIntensity})`);
+        ctx.beginPath();
+        ctx.moveTo(tailX, tailY);
+        ctx.lineTo(headX, headY);
+        ctx.strokeStyle = tailGrd;
+        ctx.lineWidth = 2.2;
+        ctx.stroke();
+
+        // Bright photon head
+        ctx.beginPath();
+        ctx.arc(headX, headY, 3.2, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${p.hue}, 100%, 90%, ${currentIntensity})`;
+        ctx.fill();
+      });
+
+      // 5. ANIMATION EFFECT 7: Interactive laser filaments linking mouse to nearest constellation dots
+      if (P.isOverHero && cursorEffects && currentIntensity > 0.4) {
+        const nearby = [];
+        for (let i = 0; i < nodes.length; i++) {
+          const d = Math.hypot(nodes[i].x - P.x, nodes[i].y - P.y);
+          if (d < 220) nearby.push({ node: nodes[i], dist: d });
+        }
+        nearby.sort((a, b) => a.dist - b.dist);
+        const topNearby = nearby.slice(0, 5);
+
+        topNearby.forEach(({ node, dist }) => {
+          const factor = 1 - dist / 220;
+          ctx.save();
+          ctx.beginPath();
+          ctx.moveTo(P.x, P.y);
+          ctx.lineTo(node.x, node.y);
+          ctx.strokeStyle = toHslaString(currentCursorColor, 0.45 * factor * currentIntensity);
+          ctx.lineWidth = 1.1;
+          ctx.setLineDash([3, 8]);
+          ctx.lineDashOffset = -time * 7; // Gentle laser streaming toward mouse
+          ctx.stroke();
+          ctx.restore();
         });
       }
 
-      // ── Layer 4: Blockchain Constellation (Linked Blocks & Live Mining) ──
-      // Check block mining trigger
+      // 6. ANIMATION EFFECT 8: Sweeping telemetry radar scanline (slow orbital sweep)
+      const scanCycle = (time * 0.015) % 1;
+      const scanY = scanCycle * (height + 200) - 100;
+      const scanGrd = ctx.createLinearGradient(0, scanY - 50, 0, scanY + 50);
+      scanGrd.addColorStop(0, 'transparent');
+      scanGrd.addColorStop(0.5, `hsla(${activePalette.primaryHue}, 85%, 60%, ${0.06 * currentIntensity})`);
+      scanGrd.addColorStop(1, 'transparent');
+      ctx.fillStyle = scanGrd;
+      ctx.fillRect(0, scanY - 50, width, 100);
+
+      ctx.beginPath();
+      ctx.moveTo(0, scanY);
+      ctx.lineTo(width, scanY);
+      ctx.strokeStyle = `hsla(${activePalette.tertiaryHue}, 90%, 70%, ${0.16 * currentIntensity})`;
+      ctx.lineWidth = 0.8;
+      ctx.stroke();
+
+      // ── Layer 4: ANIMATED Blockchain Constellation (Floating & Flowing Dashes) ──
       if (now > nextMineTime) {
-        nextMineTime = now + 7500;
+        nextMineTime = now + 9000;
         const lastBlock = chainBlocks[chainBlocks.length - 1];
         const newBlock = {
-          x: lastBlock.x + (Math.random() * 40 - 20),
-          y: Math.min(height * 0.75, lastBlock.y + 45),
-          rot: lastBlock.rot + 0.5,
-          size: 28,
+          x: lastBlock.x + (Math.random() * 30 - 15),
+          y: Math.min(height * 0.72, lastBlock.y + 40),
+          rot: lastBlock.rot + 0.4,
+          size: 26,
           hash: `0x${Math.random().toString(16).substring(2, 6)}…${Math.random().toString(16).substring(2, 4)}`,
-          pulse: 1.0, // High flash pulse
-          minedIn: true,
+          pulse: 0.6,
         };
         chainBlocks.push(newBlock);
         if (chainBlocks.length > 5) chainBlocks.shift();
-
-        // Ripple from newly mined block
-        shockwaves.push({
-          x: newBlock.x,
-          y: newBlock.y,
-          radius: 5,
-          maxRadius: 280,
-          color: { h: 185, s: 95, l: 70, a: 1 },
-          alpha: 0.8,
-        });
       }
 
-      // Render chain lines & 3D drifting blocks
       ctx.save();
       for (let i = 0; i < chainBlocks.length; i++) {
         const blk = chainBlocks[i];
-        blk.rot += 0.003 * currentIntensity;
-        if (blk.pulse > 0) blk.pulse *= 0.94; // Decay flash
+        blk.rot += 0.003 * currentIntensity; // Stately 3D rotation
+        if (blk.pulse > 0) blk.pulse *= 0.95;
 
+        // Floating vertical bobbing
+        const animatedBlockY = blk.y + Math.sin(time * 0.8 + i * 1.2) * 6;
+        const animatedBlockX = blk.x + Math.cos(time * 0.6 + i * 1.2) * 4;
+
+        // Animated flowing dash vector connecting blocks (relaxed drift)
         if (i < chainBlocks.length - 1) {
           const next = chainBlocks[i + 1];
+          const nextAnimatedY = next.y + Math.sin(time * 0.8 + (i + 1) * 1.2) * 6;
+          const nextAnimatedX = next.x + Math.cos(time * 0.6 + (i + 1) * 1.2) * 4;
+
           ctx.beginPath();
-          ctx.moveTo(blk.x, blk.y);
-          ctx.lineTo(next.x, next.y);
-          ctx.strokeStyle = `hsla(${activePalette.primaryHue}, 80%, 60%, ${0.25 * currentIntensity})`;
-          ctx.lineWidth = 1.2;
-          ctx.setLineDash([4, 4]);
+          ctx.moveTo(animatedBlockX, animatedBlockY);
+          ctx.lineTo(nextAnimatedX, nextAnimatedY);
+          ctx.strokeStyle = `hsla(${activePalette.primaryHue}, 80%, 60%, ${0.28 * currentIntensity})`;
+          ctx.lineWidth = 1.1;
+          ctx.setLineDash([4, 8]);
+          ctx.lineDashOffset = -time * 4; // Stately flowing dash stream
           ctx.stroke();
           ctx.setLineDash([]);
         }
 
-        // Draw isometric cube / block
         ctx.save();
-        ctx.translate(blk.x, blk.y);
+        ctx.translate(animatedBlockX, animatedBlockY);
         ctx.rotate(blk.rot);
 
         const sz = blk.size;
-        const flashAlpha = 0.2 + blk.pulse * 0.6;
-        ctx.fillStyle = `hsla(${activePalette.primaryHue}, 70%, 15%, ${flashAlpha * currentIntensity})`;
-        ctx.strokeStyle = `hsla(${blk.pulse > 0.3 ? 185 : activePalette.primaryHue}, 85%, 65%, ${(0.4 + blk.pulse * 0.6) * currentIntensity})`;
+        ctx.fillStyle = `hsla(${activePalette.primaryHue}, 70%, 14%, ${0.35 * currentIntensity})`;
+        ctx.strokeStyle = `hsla(${activePalette.primaryHue}, 85%, 65%, ${(0.4 + blk.pulse * 0.3) * currentIntensity})`;
         ctx.lineWidth = 1.2;
 
         ctx.beginPath();
         ctx.strokeRect(-sz / 2, -sz / 2, sz, sz);
         ctx.fillRect(-sz / 2, -sz / 2, sz, sz);
-
-        // Center micro-glyph
-        ctx.fillStyle = toHslaString(currentCursorColor, 0.6);
-        ctx.beginPath();
-        ctx.arc(0, 0, 2, 0, Math.PI * 2);
-        ctx.fill();
-
         ctx.restore();
 
-        // Label beside block
-        ctx.font = '9px "JetBrains Mono", monospace';
-        ctx.fillStyle = `hsla(${activePalette.secondaryHue}, 70%, 65%, ${0.45 * currentIntensity})`;
-        ctx.fillText(blk.hash, blk.x + 22, blk.y + 4);
+        ctx.font = '8px "JetBrains Mono", monospace';
+        ctx.fillStyle = `hsla(${activePalette.secondaryHue}, 75%, 68%, ${0.4 * currentIntensity})`;
+        ctx.fillText(blk.hash, animatedBlockX + 20, animatedBlockY + 3);
       }
       ctx.restore();
 
       // ── Layer 5: Proof-of-Work Scrambler ──
       powState.timer++;
-      if (powState.timer % 4 === 0) {
+      if (powState.timer % 5 === 0) {
         if (powState.stage === 'scrambling') {
           powState.hash = Math.random().toString(16).substring(2, 10);
           if (powState.timer > 180) {
             powState.stage = 'resolved';
             powState.hash = powState.target;
-            // Soft seal flash
-            shockwaves.push({
-              x: powState.x + 30,
-              y: powState.y,
-              radius: 5,
-              maxRadius: 180,
-              color: { h: 50, s: 95, l: 75, a: 1 }, // Gold-white spark
-              alpha: 0.7,
-            });
           }
         } else if (powState.stage === 'resolved' && powState.timer > 260) {
           powState.stage = 'scrambling';
@@ -541,70 +637,68 @@ export default function BlockchainBackground({
       }
 
       ctx.save();
-      ctx.font = '10px "JetBrains Mono", monospace';
-      ctx.fillStyle = powState.stage === 'resolved' ? '#00ffa3' : `hsla(${activePalette.secondaryHue}, 80%, 60%, 0.45)`;
+      ctx.font = '9px "JetBrains Mono", monospace';
+      ctx.fillStyle = powState.stage === 'resolved' ? 'rgba(0, 255, 163, 0.75)' : `hsla(${activePalette.secondaryHue}, 75%, 60%, 0.4)`;
       ctx.fillText(`POW::${powState.hash}`, powState.x, powState.y);
       ctx.restore();
 
-      // ── Render Shockwaves ──
-      for (let i = shockwaves.length - 1; i >= 0; i--) {
-        const sw = shockwaves[i];
-        sw.radius += 8;
-        sw.alpha *= 0.94;
+      // ── Render Subtle Ripples ──
+      for (let i = ripples.length - 1; i >= 0; i--) {
+        const rp = ripples[i];
+        rp.radius += 5;
+        rp.alpha *= 0.94;
 
         ctx.beginPath();
-        ctx.arc(sw.x, sw.y, sw.radius, 0, Math.PI * 2);
-        ctx.strokeStyle = toHslaString(sw.color, sw.alpha);
-        ctx.lineWidth = 1.6;
+        ctx.arc(rp.x, rp.y, rp.radius, 0, Math.PI * 2);
+        ctx.strokeStyle = toHslaString(rp.color, rp.alpha * 0.4);
+        ctx.lineWidth = 1.2;
         ctx.stroke();
 
-        if (sw.alpha < 0.02 || sw.radius > sw.maxRadius) {
-          shockwaves.splice(i, 1);
+        if (rp.alpha < 0.02 || rp.radius > rp.maxRadius) {
+          ripples.splice(i, 1);
         }
       }
 
-      // ── Layer 8: Ambient Calm Zone & Vignette ──
-      // Subtle headline zone attenuation: gently dims graphics directly behind center text
+      // ── Layer 8: Headline Calm Zone Vignette ──
       const centerGrd = ctx.createRadialGradient(
         width * 0.5,
-        height * 0.40,
+        height * 0.38,
         0,
         width * 0.5,
-        height * 0.40,
-        width * 0.42
+        height * 0.38,
+        width * 0.38
       );
-      centerGrd.addColorStop(0, 'rgba(3, 2, 9, 0.45)');
-      centerGrd.addColorStop(0.7, 'rgba(3, 2, 9, 0.1)');
+      centerGrd.addColorStop(0, 'rgba(3, 2, 9, 0.28)');
+      centerGrd.addColorStop(0.7, 'rgba(3, 2, 9, 0.08)');
       centerGrd.addColorStop(1, 'transparent');
       ctx.fillStyle = centerGrd;
       ctx.fillRect(0, 0, width, height);
 
       // ════════════════════════════════════════════════════════════════
-      // CURSOR SYSTEM (Hero Only, Eased Follow, Particles, Singularity)
+      // CURSOR SYSTEM (Active ONLY when over Hero)
       // ════════════════════════════════════════════════════════════════
-      if (cursorEffects && P.isOverHero && !isReducedMotion) {
+      if (cursorEffects && P.isOverHero && currentIntensity > 0.4 && !isReducedMotion) {
         const targetX = P.snapTarget ? P.snapTarget.x : P.x;
         const targetY = P.snapTarget ? P.snapTarget.y : P.y;
 
-        // Emit motion trail particle
+        // Particle ribbon
         if (P.speed > 0.4 && cursorParticles.length < PARTICLE_TRAIL_CAP) {
           cursorParticles.push({
-            x: P.x + (Math.random() - 0.5) * 6,
-            y: P.y + (Math.random() - 0.5) * 6,
-            vx: (Math.random() - 0.5) * 0.8 - P.vx * 0.08,
-            vy: (Math.random() - 0.5) * 0.8 - P.vy * 0.08,
-            alpha: 0.85,
-            size: Math.random() * 2.2 + 1.2,
-            color: { ...currentCursorColor }, // Freeze color at emission instant
+            x: P.x + (Math.random() - 0.5) * 5,
+            y: P.y + (Math.random() - 0.5) * 5,
+            vx: (Math.random() - 0.5) * 0.6 - P.vx * 0.06,
+            vy: (Math.random() - 0.5) * 0.6 - P.vy * 0.06,
+            alpha: 0.8,
+            size: Math.random() * 2 + 1,
+            color: { ...currentCursorColor },
           });
         }
 
-        // Draw & update particle ribbon
         for (let i = cursorParticles.length - 1; i >= 0; i--) {
           const pt = cursorParticles[i];
           pt.x += pt.vx;
           pt.y += pt.vy;
-          pt.alpha *= 0.93; // Smooth fade
+          pt.alpha *= 0.92;
 
           ctx.beginPath();
           ctx.arc(pt.x, pt.y, pt.size, 0, Math.PI * 2);
@@ -616,79 +710,56 @@ export default function BlockchainBackground({
           }
         }
 
-        // ── Singularity Evaluation (0.6s stillness) ──
+        // Singularity (idle for 0.6s)
         if (P.isIdle && !P.snapTarget) {
           singularityStrength = Math.min(1, singularityStrength + 0.04);
         } else {
-          // If we had a singularity and moved, trigger a burst ripple!
-          if (singularityStrength > 0.6) {
-            shockwaves.push({
-              x: P.x,
-              y: P.y,
-              radius: 12,
-              maxRadius: 220,
-              color: currentCursorColor,
-              alpha: 0.7,
-            });
-          }
-          singularityStrength = Math.max(0, singularityStrength - 0.08);
+          singularityStrength = Math.max(0, singularityStrength - 0.09);
         }
 
-        // Render Singularity Core & Accretion Orbit
         if (singularityStrength > 0.02) {
-          const sRad = 24 * singularityStrength;
+          const sRad = 20 * singularityStrength;
           ctx.save();
           ctx.translate(P.x, P.y);
 
-          // Dark-matter void core
           const voidGrd = ctx.createRadialGradient(0, 0, 0, 0, 0, sRad);
           voidGrd.addColorStop(0, '#000000');
-          voidGrd.addColorStop(0.7, '#020206');
+          voidGrd.addColorStop(0.7, '#030208');
           voidGrd.addColorStop(1, 'transparent');
           ctx.fillStyle = voidGrd;
           ctx.beginPath();
-          ctx.arc(0, 0, sRad * 1.4, 0, Math.PI * 2);
+          ctx.arc(0, 0, sRad * 1.3, 0, Math.PI * 2);
           ctx.fill();
 
-          // Glowing Accretion Ring
           ctx.beginPath();
           ctx.arc(0, 0, sRad, 0, Math.PI * 2);
-          ctx.strokeStyle = toHslaString(currentCursorColor, 0.9 * singularityStrength);
-          ctx.lineWidth = 1.8;
-          ctx.shadowColor = toHslaString(currentCursorColor);
-          ctx.shadowBlur = 16;
+          ctx.strokeStyle = toHslaString(currentCursorColor, 0.85 * singularityStrength);
+          ctx.lineWidth = 1.4;
           ctx.stroke();
-          ctx.shadowBlur = 0;
 
-          // Orbiting hex glyphs & light dust
           orbiters.forEach((orb) => {
             orb.angle += orb.speed;
             const ox = Math.cos(orb.angle) * orb.radius * singularityStrength;
             const oy = Math.sin(orb.angle) * orb.radius * singularityStrength;
-
-            ctx.font = '9px "JetBrains Mono", monospace';
-            ctx.fillStyle = toHslaString(currentCursorColor, 0.7 * singularityStrength);
+            ctx.font = '8px "JetBrains Mono", monospace';
+            ctx.fillStyle = toHslaString(currentCursorColor, 0.65 * singularityStrength);
             ctx.fillText(orb.char, ox, oy);
           });
-
           ctx.restore();
         }
 
-        // Central Bright Cursor Dot
+        // Core Dot
         ctx.beginPath();
-        ctx.arc(targetX, targetY, P.snapTarget ? 5 : 3.5, 0, Math.PI * 2);
+        ctx.arc(targetX, targetY, P.snapTarget ? 4.5 : 3, 0, Math.PI * 2);
         ctx.fillStyle = toHslaString(currentCursorColor, 0.95);
-        ctx.shadowColor = toHslaString(currentCursorColor);
-        ctx.shadowBlur = 12;
         ctx.fill();
-        ctx.shadowBlur = 0;
 
-        // Magnetic Outer Lagging Ring
-        const ringRadius = P.snapTarget ? 26 : 14;
+        // Lagging Ring
+        const ringRadius = P.snapTarget ? 24 : 13;
         ctx.beginPath();
         ctx.arc(targetX, targetY, ringRadius, 0, Math.PI * 2);
-        ctx.strokeStyle = toHslaString(currentCursorColor, 0.65);
-        ctx.lineWidth = 1.4;
+        ctx.strokeStyle = toHslaString(currentCursorColor, 0.6);
+        ctx.lineWidth = 1.3;
         ctx.stroke();
       }
 
@@ -697,7 +768,6 @@ export default function BlockchainBackground({
 
     animRef.current = requestAnimationFrame(render);
 
-    // Pause when tab hidden or document unmounted
     const handleVisibilityChange = () => {
       if (document.hidden) {
         if (animRef.current) cancelAnimationFrame(animRef.current);
@@ -730,7 +800,7 @@ export default function BlockchainBackground({
         position: 'fixed',
         inset: 0,
         zIndex: 0,
-        pointerEvents: 'none', // Never blocks content interaction
+        pointerEvents: 'none',
         overflow: 'hidden',
       }}
     >

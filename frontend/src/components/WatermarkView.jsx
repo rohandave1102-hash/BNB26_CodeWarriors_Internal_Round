@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Eye, Download, Upload, CheckCircle2, Sparkles, Shield, ArrowRight } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { BorderGlow } from './cards';
 import { embedWatermark, extractWatermark } from '../services/api';
 
 export default function WatermarkView() {
@@ -162,224 +163,237 @@ export default function WatermarkView() {
 
       {/* Embed Mode */}
       {activeSubTab === 'embed' && (
-        <form onSubmit={handleEmbed} className="glass-3d" style={{
-          padding: '32px',
-          borderRadius: 'var(--radius-lg)',
-          background: 'var(--bg-card)',
-          border: '1px solid var(--border-subtle)'
-        }}>
-          <label className="dropzone-cyber" style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '36px 20px',
-            borderRadius: 'var(--radius-md)',
-            border: '2px dashed rgba(255, 255, 255, 0.15)',
-            background: 'rgba(3, 7, 18, 0.5)',
-            cursor: 'pointer',
-            marginBottom: '24px'
-          }}>
-            <input type="file" onChange={handleEmbedFileChange} style={{ display: 'none' }} accept="image/*" />
-            {embedPreview ? (
-              <div style={{ textAlign: 'center' }}>
-                <img src={embedPreview} alt="Preview" style={{ maxHeight: '160px', borderRadius: '12px', marginBottom: '10px' }} />
-                <div style={{ color: '#fff', fontWeight: 600 }}>{embedFile?.name}</div>
-              </div>
-            ) : (
-              <div style={{ textAlign: 'center' }}>
-                <Upload size={32} color="var(--neon-purple)" style={{ marginBottom: '10px' }} />
-                <div style={{ color: '#fff', fontWeight: 700 }}>Upload original clean image</div>
-                <div style={{ color: 'var(--text-dim)', fontSize: '0.75rem' }}>PNG, JPEG, or WEBP image format</div>
-              </div>
-            )}
-          </label>
-
-          <div style={{ marginBottom: '24px' }}>
-            <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-dim)', display: 'block', marginBottom: '6px' }}>
-              SECRET PROVENANCE SIGNATURE / ON-CHAIN HASH TO EMBED
+        <BorderGlow
+          borderRadius={24}
+          glowRadius={40}
+          colors={['#a855f7', '#ff00c8', '#00f0ff']}
+          glowColor="280 85% 65%"
+          style={{ marginBottom: '32px' }}
+        >
+          <form onSubmit={handleEmbed} style={{ padding: '32px' }}>
+            <label className="dropzone-cyber" style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '36px 20px',
+              borderRadius: 'var(--radius-md)',
+              border: '2px dashed rgba(255, 255, 255, 0.15)',
+              background: 'rgba(3, 7, 18, 0.6)',
+              cursor: 'pointer',
+              marginBottom: '24px'
+            }}>
+              <input type="file" onChange={handleEmbedFileChange} style={{ display: 'none' }} accept="image/*" />
+              {embedPreview ? (
+                <div style={{ textAlign: 'center' }}>
+                  <img src={embedPreview} alt="Preview" style={{ maxHeight: '160px', borderRadius: '12px', marginBottom: '10px', border: '1px solid var(--neon-purple)', boxShadow: '0 0 20px rgba(168, 85, 247, 0.3)' }} />
+                  <div style={{ color: '#fff', fontWeight: 600 }}>{embedFile?.name}</div>
+                </div>
+              ) : (
+                <div style={{ textAlign: 'center' }}>
+                  <Upload size={32} color="var(--neon-purple)" style={{ marginBottom: '10px' }} />
+                  <div style={{ color: '#fff', fontWeight: 700 }}>Upload original clean image</div>
+                  <div style={{ color: 'var(--text-dim)', fontSize: '0.75rem' }}>PNG, JPEG, or WEBP image format</div>
+                </div>
+              )}
             </label>
-            <input
-              type="text"
-              value={secretText}
-              onChange={(e) => setSecretText(e.target.value)}
-              placeholder="0x... or custom text signature"
+
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-dim)', display: 'block', marginBottom: '6px' }}>
+                SECRET PROVENANCE SIGNATURE / ON-CHAIN HASH TO EMBED
+              </label>
+              <input
+                type="text"
+                value={secretText}
+                onChange={(e) => setSecretText(e.target.value)}
+                placeholder="0x... or custom text signature"
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  borderRadius: 'var(--radius-sm)',
+                  background: 'rgba(3, 7, 18, 0.7)',
+                  border: '1px solid var(--border-subtle)',
+                  color: 'var(--neon-purple)',
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '0.85rem'
+                }}
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={isEmbedding}
+              className="btn-cyber"
               style={{
                 width: '100%',
-                padding: '12px 16px',
+                padding: '14px',
                 borderRadius: 'var(--radius-sm)',
-                background: 'rgba(3, 7, 18, 0.7)',
-                border: '1px solid var(--border-subtle)',
-                color: 'var(--neon-purple)',
-                fontFamily: 'var(--font-mono)',
-                fontSize: '0.85rem'
+                background: 'linear-gradient(135deg, #a855f7 0%, #06b6d4 100%)',
+                color: '#030712',
+                fontSize: '1rem',
+                fontWeight: 800,
+                border: 'none',
+                cursor: 'pointer',
+                boxShadow: '0 0 25px rgba(168, 85, 247, 0.4)',
+                marginBottom: watermarkedBlobUrl ? '24px' : '0'
               }}
-              required
-            />
-          </div>
+            >
+              {isEmbedding ? 'Injecting LSB Watermark...' : 'Embed Invisible Signature (Preserves Visual Quality)'}
+            </button>
 
-          <button
-            type="submit"
-            disabled={isEmbedding}
-            className="btn-cyber"
-            style={{
-              width: '100%',
-              padding: '14px',
-              borderRadius: 'var(--radius-sm)',
-              background: 'linear-gradient(135deg, #a855f7 0%, #06b6d4 100%)',
-              color: '#030712',
-              fontSize: '1rem',
-              fontWeight: 800,
-              border: 'none',
-              cursor: 'pointer',
-              boxShadow: '0 0 25px rgba(168, 85, 247, 0.4)',
-              marginBottom: watermarkedBlobUrl ? '24px' : '0'
-            }}
-          >
-            {isEmbedding ? 'Injecting LSB Watermark...' : 'Embed Invisible Signature (Preserves Visual Quality)'}
-          </button>
-
-          {watermarkedBlobUrl && (
-            <div style={{
-              padding: '24px',
-              borderRadius: 'var(--radius-md)',
-              background: 'rgba(168, 85, 247, 0.1)',
-              border: '1px solid var(--neon-purple)',
-              textAlign: 'center'
-            }}>
-              <CheckCircle2 size={32} color="var(--neon-purple)" style={{ marginBottom: '10px' }} />
-              <div style={{ color: '#fff', fontWeight: 800, fontSize: '1.1rem', marginBottom: '6px' }}>
-                Watermark Successfully Embedded in Pixel Channels!
-              </div>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '16px' }}>
-                The image looks visually identical, but its pixel color values now contain the immutable signature.
-              </p>
-              <a
-                href={watermarkedBlobUrl}
-                download="watermarked_asset.png"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '10px 24px',
-                  borderRadius: 'var(--radius-sm)',
-                  background: 'var(--neon-purple)',
-                  color: '#030712',
-                  fontWeight: 800,
-                  fontSize: '0.85rem',
-                  textDecoration: 'none'
-                }}
+            {watermarkedBlobUrl && (
+              <BorderGlow
+                borderRadius={16}
+                glowRadius={28}
+                colors={['#10b981', '#00f0ff', '#a855f7']}
+                glowColor="160 85% 60%"
+                style={{ marginTop: '20px' }}
               >
-                <Download size={16} />
-                <span>Download Watermarked PNG</span>
-              </a>
-            </div>
-          )}
-        </form>
+                <div style={{ padding: '24px', textAlign: 'center' }}>
+                  <CheckCircle2 size={32} color="var(--neon-emerald)" style={{ marginBottom: '10px' }} />
+                  <div style={{ color: '#fff', fontWeight: 800, fontSize: '1.1rem', marginBottom: '6px' }}>
+                    Watermark Successfully Embedded in Pixel Channels!
+                  </div>
+                  <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '16px' }}>
+                    The image looks visually identical, but its pixel color values now contain the immutable signature.
+                  </p>
+                  <a
+                    href={watermarkedBlobUrl}
+                    download="watermarked_asset.png"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '10px 24px',
+                      borderRadius: 'var(--radius-sm)',
+                      background: 'var(--neon-emerald)',
+                      color: '#030712',
+                      fontWeight: 800,
+                      fontSize: '0.85rem',
+                      textDecoration: 'none',
+                      boxShadow: '0 0 20px rgba(16, 185, 129, 0.4)'
+                    }}
+                  >
+                    <Download size={16} />
+                    <span>Download Watermarked PNG</span>
+                  </a>
+                </div>
+              </BorderGlow>
+            )}
+          </form>
+        </BorderGlow>
       )}
 
       {/* Extract Mode */}
       {activeSubTab === 'extract' && (
-        <form onSubmit={handleExtract} className="glass-3d" style={{
-          padding: '32px',
-          borderRadius: 'var(--radius-lg)',
-          background: 'var(--bg-card)',
-          border: '1px solid var(--border-subtle)'
-        }}>
-          <label className="dropzone-cyber" style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '36px 20px',
-            borderRadius: 'var(--radius-md)',
-            border: '2px dashed rgba(255, 255, 255, 0.15)',
-            background: 'rgba(3, 7, 18, 0.5)',
-            cursor: 'pointer',
-            marginBottom: '24px'
-          }}>
-            <input type="file" onChange={handleExtractFileChange} style={{ display: 'none' }} accept="image/*" />
-            {extractPreview ? (
-              <div style={{ textAlign: 'center' }}>
-                <img src={extractPreview} alt="Preview" style={{ maxHeight: '160px', borderRadius: '12px', marginBottom: '10px' }} />
-                <div style={{ color: '#fff', fontWeight: 600 }}>{extractFile?.name}</div>
-              </div>
-            ) : (
-              <div style={{ textAlign: 'center' }}>
-                <Upload size={32} color="var(--neon-purple)" style={{ marginBottom: '10px' }} />
-                <div style={{ color: '#fff', fontWeight: 700 }}>Upload image to inspect for pixel watermark</div>
-                <div style={{ color: 'var(--text-dim)', fontSize: '0.75rem' }}>Extracts signature even if metadata was completely stripped</div>
-              </div>
-            )}
-          </label>
-
-          <button
-            type="submit"
-            disabled={isExtracting}
-            className="btn-cyber"
-            style={{
-              width: '100%',
-              padding: '14px',
-              borderRadius: 'var(--radius-sm)',
-              background: 'linear-gradient(135deg, #a855f7 0%, #06b6d4 100%)',
-              color: '#030712',
-              fontSize: '1rem',
-              fontWeight: 800,
-              border: 'none',
-              cursor: 'pointer',
-              boxShadow: '0 0 25px rgba(168, 85, 247, 0.4)',
-              marginBottom: extractResult ? '24px' : '0'
-            }}
-          >
-            {isExtracting ? 'Decoding Pixel Matrix...' : 'Extract Invisible Watermark & Audit On-Chain'}
-          </button>
-
-          {extractResult && (
-            <div style={{
-              padding: '24px',
+        <BorderGlow
+          borderRadius={24}
+          glowRadius={40}
+          colors={['#00f0ff', '#10b981', '#a855f7']}
+          glowColor="185 90% 55%"
+          style={{ marginBottom: '32px' }}
+        >
+          <form onSubmit={handleExtract} style={{ padding: '32px' }}>
+            <label className="dropzone-cyber" style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '36px 20px',
               borderRadius: 'var(--radius-md)',
-              background: extractResult.hasWatermark ? 'rgba(16, 185, 129, 0.1)' : 'rgba(244, 63, 94, 0.1)',
-              border: `1px solid ${extractResult.hasWatermark ? 'var(--neon-emerald)' : 'var(--neon-crimson)'}`
+              border: '2px dashed rgba(255, 255, 255, 0.15)',
+              background: 'rgba(3, 7, 18, 0.6)',
+              cursor: 'pointer',
+              marginBottom: '24px'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-                <Shield size={24} color={extractResult.hasWatermark ? 'var(--neon-emerald)' : 'var(--neon-crimson)'} />
-                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff' }}>
-                  {extractResult.hasWatermark ? '✅ Watermark Detected & Extracted' : '❌ No Pixel Watermark Found'}
-                </h3>
-              </div>
-
-              {extractResult.hasWatermark ? (
-                <div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', fontWeight: 700, marginBottom: '4px' }}>
-                    EXTRACTED SIGNATURE / HASH
-                  </div>
-                  <div style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '0.82rem',
-                    color: 'var(--neon-emerald)',
-                    wordBreak: 'break-all',
-                    padding: '10px 14px',
-                    borderRadius: '8px',
-                    background: 'rgba(3, 7, 18, 0.6)',
-                    marginBottom: '14px'
-                  }}>
-                    {extractResult.extractedSignature}
-                  </div>
-
-                  <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                    Ledger Status: <span style={{ color: '#fff', fontWeight: 700 }}>
-                      {extractResult.ledgerVerified ? 'Verified On-Chain Ancestry' : 'Unregistered in Current Ledger'}
-                    </span>
-                  </div>
+              <input type="file" onChange={handleExtractFileChange} style={{ display: 'none' }} accept="image/*" />
+              {extractPreview ? (
+                <div style={{ textAlign: 'center' }}>
+                  <img src={extractPreview} alt="Preview" style={{ maxHeight: '160px', borderRadius: '12px', marginBottom: '10px' }} />
+                  <div style={{ color: '#fff', fontWeight: 600 }}>{extractFile?.name}</div>
                 </div>
               ) : (
-                <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                  {extractResult.message}
+                <div style={{ textAlign: 'center' }}>
+                  <Upload size={32} color="var(--neon-cyan)" style={{ marginBottom: '10px' }} />
+                  <div style={{ color: '#fff', fontWeight: 700 }}>Upload image to inspect for pixel watermark</div>
+                  <div style={{ color: 'var(--text-dim)', fontSize: '0.75rem' }}>Extracts signature even if metadata was completely stripped</div>
                 </div>
               )}
-            </div>
-          )}
-        </form>
+            </label>
+
+            <button
+              type="submit"
+              disabled={isExtracting}
+              className="btn-cyber"
+              style={{
+                width: '100%',
+                padding: '14px',
+                borderRadius: 'var(--radius-sm)',
+                background: 'linear-gradient(135deg, #00f0ff 0%, #10b981 100%)',
+                color: '#030712',
+                fontSize: '1rem',
+                fontWeight: 800,
+                border: 'none',
+                cursor: 'pointer',
+                boxShadow: '0 0 25px rgba(0, 240, 255, 0.4)',
+                marginBottom: extractResult ? '24px' : '0'
+              }}
+            >
+              {isExtracting ? 'Decoding Pixel Matrix...' : 'Extract Invisible Watermark & Audit On-Chain'}
+            </button>
+
+            {extractResult && (
+              <BorderGlow
+                borderRadius={16}
+                glowRadius={28}
+                colors={extractResult.hasWatermark ? ['#10b981', '#00f0ff', '#a855f7'] : ['#ff3366', '#ff00c8', '#7c3aed']}
+                glowColor={extractResult.hasWatermark ? '160 85% 60%' : '350 90% 60%'}
+                style={{ marginTop: '20px' }}
+              >
+                <div style={{ padding: '24px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
+                    <Shield size={24} color={extractResult.hasWatermark ? 'var(--neon-emerald)' : 'var(--neon-crimson)'} />
+                    <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff' }}>
+                      {extractResult.hasWatermark ? '✅ Watermark Detected & Extracted' : '❌ No Pixel Watermark Found'}
+                    </h3>
+                  </div>
+
+                  {extractResult.hasWatermark ? (
+                    <div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', fontWeight: 700, marginBottom: '6px', letterSpacing: '0.04em' }}>
+                        EXTRACTED SIGNATURE / HASH
+                      </div>
+                      <div style={{
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: '0.82rem',
+                        color: 'var(--neon-emerald)',
+                        wordBreak: 'break-all',
+                        padding: '12px 16px',
+                        borderRadius: '8px',
+                        background: 'rgba(3, 7, 18, 0.65)',
+                        marginBottom: '14px',
+                        border: '1px solid var(--border-subtle)'
+                      }}>
+                        {extractResult.extractedSignature}
+                      </div>
+
+                      <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                        Ledger Status: <span style={{ color: '#fff', fontWeight: 700 }}>
+                          {extractResult.ledgerVerified ? 'Verified On-Chain Ancestry' : 'Unregistered in Current Ledger'}
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                      {extractResult.message}
+                    </div>
+                  )}
+                </div>
+              </BorderGlow>
+            )}
+          </form>
+        </BorderGlow>
       )}
     </div>
   );
