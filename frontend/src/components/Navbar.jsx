@@ -1,227 +1,141 @@
-import React from 'react';
-import { Shield, ExternalLink, Terminal, BookOpen, User, LogOut } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Shield, Activity, BookOpen, LogIn, LogOut, User } from 'lucide-react';
 
 export default function Navbar({ stats, onOpenSpecs, onOpenAuth, user, onSignOut }) {
+  const [scrolled, setScrolled] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  const handleSignOut = async () => {
+    setSigningOut(true);
+    await onSignOut?.();
+    setSigningOut(false);
+  };
+
   return (
-    <header style={{
-      position: 'sticky',
-      top: 0,
-      zIndex: 100,
-      backdropFilter: 'blur(24px)',
-      WebkitBackdropFilter: 'blur(24px)',
-      backgroundColor: 'rgba(5, 5, 14, 0.75)',
-      borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-      padding: '0 32px'
-    }}>
-      <div style={{
-        maxWidth: '1440px',
-        margin: '0 auto',
-        height: '76px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between'
-      }}>
-        {/* Brand */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <div style={{
-            position: 'relative',
-            width: '42px',
-            height: '42px',
-            borderRadius: '12px',
-            background: 'linear-gradient(135deg, #00f0ff 0%, #8b5cf6 100%)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 0 25px rgba(0, 240, 255, 0.45)',
-            transform: 'perspective(600px) rotateX(8deg) rotateY(-8deg)'
-          }}>
-            <Shield size={23} color="#03030a" strokeWidth={2.5} />
-            <span style={{
-              position: 'absolute',
-              top: '-3px',
-              right: '-3px',
-              width: '10px',
-              height: '10px',
-              borderRadius: '50%',
-              backgroundColor: '#00f0ff',
-              boxShadow: '0 0 10px #00f0ff'
-            }} />
-          </div>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{
-                fontSize: '1.35rem',
-                fontWeight: 900,
-                letterSpacing: '-0.03em',
-                fontFamily: 'var(--font-display)',
-                color: '#fff'
-              }}>
-                Model<span style={{ color: 'var(--neon-cyan)' }}>Ledger</span>
-              </span>
-              <span style={{
-                fontSize: '0.65rem',
-                fontWeight: 800,
-                letterSpacing: '0.08em',
-                padding: '2px 8px',
-                borderRadius: '6px',
-                background: 'rgba(0, 240, 255, 0.15)',
-                color: 'var(--neon-cyan)',
-                border: '1px solid rgba(0, 240, 255, 0.3)'
-              }}>
-                EVM + C2PA
-              </span>
-            </div>
-            <div style={{ fontSize: '0.74rem', color: 'var(--text-dim)' }}>
-              Autonomous AI Provenance & Steganographic Forensics
-            </div>
-          </div>
+    <nav
+      className={`navbar${scrolled ? ' scrolled' : ''}`}
+      style={{ zIndex: 500 }}
+    >
+      {/* ── Brand ── */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{
+          width: '34px', height: '34px',
+          borderRadius: '10px',
+          background: 'linear-gradient(135deg, #00f0ff 0%, #7c3aed 100%)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: '0 0 18px rgba(0,240,255,0.4)',
+          flexShrink: 0,
+        }}>
+          <Shield size={18} color="#020208" strokeWidth={2.5} />
         </div>
-
-        {/* Minimal Right Badges & Controls */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          {/* Guide & Specs Button */}
-          <button
-            onClick={onOpenSpecs}
-            className="btn-cyber"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '7px 14px',
-              borderRadius: '999px',
-              background: 'rgba(0, 240, 255, 0.1)',
-              border: '1px solid rgba(0, 240, 255, 0.3)',
-              color: 'var(--neon-cyan)',
-              fontSize: '0.78rem',
-              fontWeight: 700,
-              cursor: 'pointer'
-            }}
-          >
-            <BookOpen size={14} />
-            <span>📖 Guide & Specs</span>
-          </button>
-
-          {/* Swagger link */}
-          <a
-            href="http://localhost:5000/docs"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '7px 12px',
-              borderRadius: '8px',
-              background: 'rgba(255, 255, 255, 0.04)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              color: 'var(--text-muted)',
-              fontSize: '0.75rem',
-              textDecoration: 'none',
-              transition: 'all 0.2s ease'
-            }}
-          >
-            <Terminal size={14} color="var(--neon-purple)" />
-            <span>API Docs</span>
-            <ExternalLink size={12} />
-          </a>
-
-          {/* Live Node Pill */}
+        <div>
           <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            padding: '7px 16px',
-            borderRadius: '9999px',
-            background: 'rgba(12, 12, 24, 0.7)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            fontSize: '0.8rem'
+            fontFamily: 'var(--font-display)',
+            fontSize: '1.05rem',
+            fontWeight: 800,
+            letterSpacing: '-0.02em',
+            background: 'linear-gradient(135deg, #f0f4ff 0%, rgba(0,240,255,0.9) 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            lineHeight: 1,
           }}>
-            <span style={{
-              width: '8px',
-              height: '8px',
-              borderRadius: '50%',
-              backgroundColor: stats?.isContractConnected ? 'var(--neon-emerald)' : 'var(--neon-cyan)',
-              boxShadow: `0 0 12px ${stats?.isContractConnected ? 'var(--neon-emerald)' : 'var(--neon-cyan)'}`
-            }} />
-            <span style={{ color: 'var(--text-muted)', fontWeight: 500 }}>
-              {stats?.isContractConnected ? 'Hardhat EVM (31337)' : 'Resilient Cryptographic Mode'}
-            </span>
-            <span style={{ color: 'rgba(255, 255, 255, 0.2)' }}>|</span>
-            <span style={{ color: '#fff', fontWeight: 700 }}>
-              {stats?.totalArtifacts || 0} Anchored
-            </span>
+            ModelLedger
           </div>
-
-          {/* User Auth Profile Pill */}
-          {user ? (
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              padding: '5px 12px',
-              borderRadius: '999px',
-              background: 'rgba(139, 92, 246, 0.15)',
-              border: '1px solid rgba(139, 92, 246, 0.35)'
-            }}>
-              <div style={{
-                width: '26px',
-                height: '26px',
-                borderRadius: '50%',
-                background: 'var(--neon-purple)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#03030a',
-                fontWeight: 800,
-                fontSize: '0.72rem'
-              }}>
-                {user.email?.[0]?.toUpperCase() || 'U'}
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#fff' }}>
-                  {user.user_metadata?.full_name || user.email.split('@')[0]}
-                </span>
-                <span style={{ fontSize: '0.62rem', color: 'var(--neon-purple)' }}>
-                  {user.role || 'Auditor'}
-                </span>
-              </div>
-              <button
-                onClick={onSignOut}
-                title="Sign Out"
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: 'var(--text-dim)',
-                  cursor: 'pointer',
-                  marginLeft: '4px',
-                  display: 'flex',
-                  alignItems: 'center'
-                }}
-              >
-                <LogOut size={14} />
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={onOpenAuth}
-              className="btn-cyber"
-              style={{
-                padding: '7px 16px',
-                borderRadius: '999px',
-                background: 'linear-gradient(135deg, #00f0ff 0%, #8b5cf6 100%)',
-                color: '#03030a',
-                fontSize: '0.78rem',
-                fontWeight: 800,
-                border: 'none',
-                cursor: 'pointer'
-              }}
-            >
-              <User size={14} />
-              <span>Sign In / Demo</span>
-            </button>
-          )}
+          <div style={{
+            fontSize: '0.62rem',
+            fontFamily: 'var(--font-mono)',
+            color: 'rgba(0,240,255,0.5)',
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase',
+            marginTop: '1px',
+          }}>
+            Protocol v3
+          </div>
         </div>
       </div>
-    </header>
+
+      {/* ── Right Controls ── */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+
+        {/* Chain status pill */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: '6px',
+          padding: '5px 12px',
+          borderRadius: 'var(--r-pill)',
+          background: 'rgba(0,0,0,0.3)',
+          border: stats.isContractConnected
+            ? '1px solid rgba(0,255,163,0.25)'
+            : '1px solid rgba(255,51,102,0.25)',
+          fontSize: '0.72rem',
+          fontFamily: 'var(--font-mono)',
+          color: stats.isContractConnected ? 'var(--neon-emerald)' : 'var(--neon-red)',
+        }}>
+          <span className={`status-dot ${stats.isContractConnected ? 'online' : 'offline'}`}
+            style={{ width: '6px', height: '6px' }} />
+          {stats.isContractConnected ? 'EVM Live' : 'Offline'}
+        </div>
+
+        {/* Docs button */}
+        <button
+          onClick={onOpenSpecs}
+          className="btn btn-ghost"
+          style={{
+            padding: '7px 14px',
+            fontSize: '0.78rem',
+            borderRadius: 'var(--r-pill)',
+            display: 'flex', alignItems: 'center', gap: '6px',
+          }}
+        >
+          <BookOpen size={14} />
+          <span style={{ display: 'none', ['@media (min-width: 640px)']: { display: 'inline' } }}>
+            Docs
+          </span>
+        </button>
+
+        {/* Auth */}
+        {user ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '7px',
+              padding: '6px 12px',
+              borderRadius: 'var(--r-pill)',
+              background: 'rgba(124,58,237,0.12)',
+              border: '1px solid rgba(124,58,237,0.3)',
+              fontSize: '0.78rem',
+              color: '#c4b5fd',
+            }}>
+              <User size={13} />
+              <span style={{ maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {user.email?.split('@')[0] || 'user'}
+              </span>
+            </div>
+            <button
+              onClick={handleSignOut}
+              disabled={signingOut}
+              className="btn btn-icon"
+              title="Sign out"
+            >
+              <LogOut size={15} />
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={onOpenAuth}
+            className="btn btn-primary"
+            style={{ padding: '7px 18px', fontSize: '0.78rem', borderRadius: 'var(--r-pill)' }}
+          >
+            <LogIn size={14} />
+            Sign In
+          </button>
+        )}
+      </div>
+    </nav>
   );
 }

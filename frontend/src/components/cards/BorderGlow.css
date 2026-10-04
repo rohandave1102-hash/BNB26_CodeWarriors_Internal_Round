@@ -1,0 +1,125 @@
+/* ═══════════════════════════════════════════════════════════════════
+   BORDERGLOW — Interactive Cybernetic Edge Glow (React Bits Pattern)
+   ═══════════════════════════════════════════════════════════════════ */
+
+.border-glow-wrapper {
+  position: relative;
+  border-radius: var(--border-radius, 24px);
+  background-color: var(--card-bg, #0B0912);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+  isolation: isolate;
+  /* Allow the external glow to extend without parent clipping */
+  margin: 1px;
+}
+
+/* Subtle outer atmospheric shadow */
+.border-glow-wrapper::before {
+  content: '';
+  position: absolute;
+  inset: calc(var(--glow-radius, 32px) * -0.5);
+  border-radius: calc(var(--border-radius, 24px) + var(--glow-radius, 32px) * 0.5);
+  background: radial-gradient(
+    circle at var(--cursor-x, 50%) var(--cursor-y, 50%),
+    hsl(var(--glow-color, 270 85% 65%) / calc(var(--edge-proximity, 0) * var(--glow-intensity, 1) * 0.35)),
+    transparent 70%
+  );
+  z-index: -2;
+  pointer-events: none;
+  opacity: var(--edge-proximity, 0);
+  transition: opacity 0.25s ease-out;
+  filter: blur(calc(var(--glow-radius, 32px) * 0.75));
+}
+
+/* Conic reactive glow along card perimeter */
+.border-glow-wrapper::after {
+  content: '';
+  position: absolute;
+  inset: -1.5px;
+  border-radius: calc(var(--border-radius, 24px) + 1.5px);
+  padding: 1.5px;
+  background: conic-gradient(
+    from var(--cursor-angle, 0deg) at var(--cursor-x, 50%) var(--cursor-y, 50%),
+    hsl(var(--glow-color, 270 85% 65%) / calc(var(--edge-proximity, 0) * var(--glow-intensity, 1))),
+    var(--color-1, #c084fc) calc(var(--cone-spread, 25deg) * 0.5),
+    var(--color-2, #f472b6) calc(var(--cone-spread, 25deg) * 1),
+    var(--color-3, #38bdf8) calc(var(--cone-spread, 25deg) * 1.5),
+    transparent calc(var(--cone-spread, 25deg) * 2),
+    transparent calc(360deg - var(--cone-spread, 25deg) * 2),
+    var(--color-3, #38bdf8) calc(360deg - var(--cone-spread, 25deg) * 1.5),
+    var(--color-2, #f472b6) calc(360deg - var(--cone-spread, 25deg) * 1),
+    var(--color-1, #c084fc) calc(360deg - var(--cone-spread, 25deg) * 0.5),
+    hsl(var(--glow-color, 270 85% 65%) / calc(var(--edge-proximity, 0) * var(--glow-intensity, 1)))
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  z-index: 1;
+  pointer-events: none;
+  opacity: calc(0.35 + var(--edge-proximity, 0) * 0.65);
+  transition: opacity 0.25s ease-out;
+}
+
+/* Inner content container */
+.border-glow-inner {
+  position: relative;
+  z-index: 2;
+  border-radius: var(--border-radius, 24px);
+  background-color: var(--card-bg, #0B0912);
+  height: 100%;
+  width: 100%;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Soft internal ambient fill gradient */
+.border-glow-fill {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    circle at var(--cursor-x, 50%) var(--cursor-y, 50%),
+    hsl(var(--glow-color, 270 85% 65%) / calc(var(--fill-opacity, 0.5) * var(--edge-proximity, 0) * 0.15)),
+    transparent 65%
+  );
+  pointer-events: none;
+  z-index: 0;
+  transition: opacity 0.3s ease;
+}
+
+/* Interactive keyboard focus support */
+.border-glow-wrapper:focus-within {
+  --edge-proximity: 0.95;
+  --cursor-angle: 45deg;
+  --cursor-x: 50%;
+  --cursor-y: 0%;
+  outline: none;
+}
+
+/* Automated laser sweep for CTA Highlight cards */
+.border-glow-animated::after {
+  animation: borderGlowSweep 6s linear infinite;
+}
+
+@keyframes borderGlowSweep {
+  0% {
+    --cursor-angle: 0deg;
+    --cursor-x: 50%;
+    --cursor-y: 50%;
+  }
+  100% {
+    --cursor-angle: 360deg;
+    --cursor-x: 50%;
+    --cursor-y: 50%;
+  }
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .border-glow-animated::after {
+    animation: none;
+  }
+  .border-glow-wrapper {
+    transition: none;
+  }
+}

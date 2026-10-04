@@ -1,0 +1,267 @@
+/* ═══════════════════════════════════════════════════════════════════
+   PROFILECARD — 3D Holographic Identity & Credential Card (React Bits)
+   Scoped variables, non-blocking touch scroll, and cyber sheen
+   ═══════════════════════════════════════════════════════════════════ */
+
+.pc-card-wrapper {
+  /* Scoped CSS variables (NOT polluting :root) */
+  --pc-tilt-x: 0deg;
+  --pc-tilt-y: 0deg;
+  --pc-pointer-x: 50%;
+  --pc-pointer-y: 50%;
+  --pc-glare-opacity: 0;
+  --pc-behind-glow: rgba(139, 92, 246, 0.3);
+  --pc-radius: 24px;
+  
+  position: relative;
+  width: 100%;
+  max-width: 380px;
+  min-height: 420px;
+  perspective: 1200px;
+  transform-style: preserve-3d;
+  /* CRITICAL FIX: Allow page scrolling on touch devices without getting trapped */
+  touch-action: pan-y;
+  user-select: none;
+  margin: 0 auto;
+}
+
+/* Ambient backing glow derived from identity hash */
+.pc-behind-glow {
+  position: absolute;
+  inset: -10px;
+  border-radius: calc(var(--pc-radius) + 12px);
+  background: var(--pc-behind-glow);
+  filter: blur(32px);
+  opacity: 0.65;
+  z-index: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease, filter 0.4s ease;
+}
+
+.pc-card-wrapper:hover .pc-behind-glow {
+  opacity: 0.95;
+  filter: blur(42px);
+}
+
+/* 3D Tilting Card Base */
+.pc-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 420px;
+  border-radius: var(--pc-radius);
+  background: #080712;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  transform: rotateX(var(--pc-tilt-x)) rotateY(var(--pc-tilt-y));
+  transform-style: preserve-3d;
+  transition: transform 0.12s cubic-bezier(0.2, 0, 0.2, 1), border-color 0.3s ease;
+  overflow: hidden;
+  box-shadow: 
+    0 16px 40px rgba(0, 0, 0, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 24px;
+  z-index: 1;
+}
+
+.pc-card-wrapper:hover .pc-card-inner {
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+/* Holographic Glare Layer */
+.pc-glare {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    circle at var(--pc-pointer-x) var(--pc-pointer-y),
+    rgba(255, 255, 255, 0.22) 0%,
+    rgba(0, 240, 255, 0.12) 30%,
+    rgba(255, 0, 200, 0.08) 60%,
+    transparent 80%
+  );
+  opacity: var(--pc-glare-opacity);
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  z-index: 10;
+  transition: opacity 0.3s ease;
+}
+
+/* Holographic Prismatic Sheen (Rainbow Foil Effect) */
+.pc-sheen {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    calc(var(--pc-pointer-x-ratio, 0.5) * 180deg + 45deg),
+    transparent 20%,
+    rgba(0, 240, 255, 0.14) 40%,
+    rgba(255, 0, 200, 0.14) 60%,
+    transparent 80%
+  );
+  opacity: calc(var(--pc-glare-opacity) * 0.75);
+  mix-blend-mode: screen;
+  pointer-events: none;
+  z-index: 9;
+}
+
+/* Subtle Film Noise Texture */
+.pc-noise {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 0);
+  background-size: 8px 8px;
+  opacity: 0.6;
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* Card Header Section */
+.pc-header {
+  position: relative;
+  z-index: 4;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  pointer-events: none;
+}
+
+/* Status Badge */
+.pc-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  background: rgba(8, 7, 18, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(12px);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  color: #f8fafc;
+}
+
+/* Avatar / Identicon Artwork */
+.pc-avatar-container {
+  position: relative;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 20px 0;
+  pointer-events: none;
+}
+
+.pc-avatar-ring {
+  width: 96px;
+  height: 96px;
+  border-radius: 24px;
+  padding: 3px;
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.6), rgba(139, 92, 246, 0.6), rgba(255, 0, 200, 0.4));
+  box-shadow: 0 0 24px rgba(0, 240, 255, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateZ(28px);
+  transition: transform 0.3s ease;
+}
+
+.pc-avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 21px;
+  object-fit: cover;
+  background: #05040a;
+}
+
+/* User Info Frosted Glass Bar */
+.pc-user-info {
+  position: relative;
+  z-index: 5;
+  background: rgba(14, 12, 26, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transform: translateZ(20px);
+  /* Interactive buttons MUST allow pointer clicks */
+  pointer-events: none;
+}
+
+.pc-user-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pc-name {
+  font-family: var(--font-display, sans-serif);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+}
+
+.pc-title {
+  font-family: var(--font-sans, sans-serif);
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+.pc-handle {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.76rem;
+  color: #00f0ff;
+  letter-spacing: 0.02em;
+}
+
+/* Action Button */
+.pc-action-btn {
+  pointer-events: auto !important;
+  width: 100%;
+  padding: 9px 14px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
+  border: 1px solid rgba(0, 240, 255, 0.35);
+  color: #ffffff;
+  font-family: var(--font-sans, sans-serif);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.pc-action-btn:hover {
+  background: linear-gradient(135deg, #00f0ff 0%, #a855f7 100%);
+  color: #04030a;
+  border-color: #00f0ff;
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+  transform: translateY(-1px);
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .pc-card-inner {
+    transform: none !important;
+    transition: none !important;
+  }
+  .pc-avatar-ring {
+    transform: none !important;
+  }
+  .pc-user-info {
+    transform: none !important;
+  }
+}
